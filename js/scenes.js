@@ -16,8 +16,12 @@ export class Scene {
     this.stars = Array.from({ length: 90 }, () => ({ x: Math.random() * W, y: Math.random() * WATER_Y * 0.9, r: Math.random() * 1.4 + 0.4, tw: Math.random() * TAU }));
     this.clouds = Array.from({ length: 5 }, (_, i) => ({ x: Math.random() * W, y: 40 + Math.random() * 130, s: 0.6 + Math.random() * 0.9, v: 4 + Math.random() * 7 }));
     this.bubbles = Array.from({ length: 26 }, () => newBubble(true));
-    this.ambientFish = Array.from({ length: 7 }, () => ({
-      x: Math.random() * W, y: WATER_Y + 60 + Math.random() * 220, v: 12 + Math.random() * 26, s: 0.35 + Math.random() * 0.5, flip: Math.random() < 0.5, wob: Math.random() * TAU,
+    // boids school (Tidewater Fish.js-style steering, 2D budget): 16 fish with
+    // separation / alignment / cohesion + wander, stepped in world.js
+    this.ambientFish = Array.from({ length: 16 }, () => ({
+      x: Math.random() * W, y: WATER_Y + 60 + Math.random() * 220,
+      vx: (Math.random() - 0.5) * 40, vy: (Math.random() - 0.5) * 12,
+      s: 0.35 + Math.random() * 0.5, wob: Math.random() * TAU,
     }));
     this.worldT = 0;
     this.monsterT = 30 + Math.random() * 40; // abyss easter-egg timer
@@ -34,6 +38,21 @@ export class Scene {
     return 1 - (p - (CYCLE - edge)) / edge;
   }
   isNight(t) { return (t % CYCLE) > DAY_LEN; }
+
+  // golden-hour phases: 'dusk' (day->night fade) and 'dawn' (night->day fade)
+  phaseOf(t) {
+    const p = t % CYCLE;
+    if (p >= DAY_LEN - 10 && p < DAY_LEN) return 'dusk';
+    if (p >= CYCLE - 10) return 'dawn';
+    return this.isNight(t) ? 'night' : 'day';
+  }
+
+  // game-clock hour 0..30 on the cycle (day 6..18, night 18..30 ≡ 6) — feeds activity()
+  hourOf(t) {
+    const p = t % CYCLE;
+    let h = p < DAY_LEN ? 6 + 12 * (p / DAY_LEN) : 18 + 12 * ((p - DAY_LEN) / (CYCLE - DAY_LEN));
+    return h > 24 ? h - 24 : h; // wrap 24..30 -> 0..6 so dawn peaks at 6.5
+  }
 
   draw(ctx, g, dt) {
     // g: { fg, juice, economy, zone, t }

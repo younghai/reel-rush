@@ -115,7 +115,7 @@ export function drawFightUI(ctx, fg) {
   ctx.fillText(t('scene.tension'), cx, ty + th + 16);
   // stamina pips
   if (fg.fish) {
-    const sk = clamp(st.stamina / fg.fish.stamina, 0, 1);
+    const sk = clamp(st.stamina / (st.staminaMax || fg.fish.stamina), 0, 1);
     ctx.fillStyle = 'rgba(255,180,80,0.9)';
     ctx.fillRect(cx - w / 2, ty - 10, w * sk, 4);
   }
@@ -166,7 +166,7 @@ export function drawRevealCard(ctx, fg) {
   ctx.fillText(fishName(r.fish), 0, 62);
   ctx.fillStyle = '#8fb4cc';
   ctx.font = '700 13px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-  ctx.fillText(`${r.fish.name} · ${(r.weight).toFixed(2)}kg`, 0, 84);
+  ctx.fillText(`${r.fish.name} · ${(r.weight).toFixed(2)}kg${r.cm ? ' · ' + r.cm + 'cm' : ''}`, 0, 84);
   // value
   ctx.fillStyle = '#ffd54a';
   ctx.font = '900 30px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';

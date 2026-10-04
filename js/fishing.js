@@ -1,12 +1,39 @@
 // REEL RUSH — fishing state machine: cast -> wait -> strike -> fight -> reveal
 // Owns minigame logic + juice/audio triggers. Rendering lives in scenes.js.
 
-import { FIGHT, CAST, WAIT, COMBO, DEPTH_BANDS, RARITIES, WATER_Y } from './config.js';
+import { FIGHT, CAST, COMBO, DEPTH_BANDS, RARITIES, WATER_Y } from './config.js';
 import { t, fishName } from './i18n.js';
 import { rollWeight, calcValue } from './economy.js';
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const rnd = (a, b) => a + Math.random() * (b - a);
+
+// Time-of-day activity multiplier (Tidewater Bites.activity): dawn/dusk are
+// gaussian peaks on a 0..30h cycle (day 6..18, night 18..30 ≡ 6). Returns ~0.15..1.
+// 'dawnDusk' species peak at the golden-hour transitions but stay reachable all day.
+export function activity(pref, hour) {
+  const dawn = Math.exp(-((hour - 6.5) ** 2) / 2.5), dusk = Math.exp(-((hour - 18.5) ** 2) / 2.5);
+  const night = hour < 5.5 || hour > 19.5 ? 1 : 0;
+  const day = hour > 7 && hour < 18 ? 1 : 0.35;
+  switch (pref) {
+    case 'day': return 0.25 + 0.75 * day * (1 - night);
+    case 'dawnDusk': return 0.3 + 0.7 * Math.max(dawn, dusk) + 0.1 * day;
+    case 'night': return 0.15 + 0.85 * Math.max(night, dusk * 0.8);
+    default: return 0.8 + 0.2 * Math.max(dawn, dusk);
+  }
+}
+
+// Smoothstep habitat affinity for a species' preferred cast-depth band (0..1 power).
+// Inside the band: 1; outside: fades over 0.3 of band width.
+function inBandCheck(tension, F) { return tension >= F.greenLow && tension <= F.greenHigh; }
+
+function depthAffinity(depth, p) {
+  const [lo, hi] = depth;
+  const ss = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0 || 1e-6), 0, 1); return t * t * (3 - 2 * t); };
+  if (p >= lo && p <= hi) return 1;
+  if (p < lo) return 1 - ss(lo - 0.3, lo, p);
+  return 1 - ss(hi, hi + 0.3, p);
+}
 
 export class FishingGame {
   constructor({ juice, audio, economy, fishes, onEvent }) {
@@ -28,7 +55,8 @@ export class FishingGame {
   #resetFight() {
     this.fight = {
       tension: 30, progress: 0, strain: 0, escapeT: 0,
-      surgeT: rnd(0.6, 1.4), surging: false, stamina: 0, phase: 1, reelTick: 0,
+      surgeT: rnd(0.6, 1.4), surging: false, surge: 0, // surge: smoothed 0..1 (inertia)
+      stamina: 0, staminaMax: 1, phase: 1, reelTick: 0, slack: 0,
     };
   }
 
@@ -68,19 +96,17 @@ export class FishingGame {
   }
 
   // ---------- fish selection ----------
-  pickFish(zoneId, isNight, castPower) {
+  // zoneId, hour (0..30, dawn/dusk live at the 6/18 edges), castPower 0..1
+  pickFish(zoneId, hour, castPower) {
     const band = DEPTH_BANDS.find(b => castPower >= b.from && (castPower <= b.to || b === DEPTH_BANDS[DEPTH_BANDS.length - 1])) ?? DEPTH_BANDS[0];
     const baitLvl = this.economy.upgrades.bait;
     const pool = [];
     for (const f of this.fishes) {
       if (f.zone !== zoneId) continue;
-      if (f.time !== 'any' && f.time !== (isNight ? 'night' : 'day')) continue;
-      let w = RARITIES[f.rarity].weight;
-      // time matching: specialists are more likely in their slot
-      if (f.time === 'any') w *= 0.75;
-      // deep casts favor rare+
-      if (RARITIES[f.rarity].order >= 2) w *= band.rareBias;
-      // bait boosts rare+
+      let w = RARITIES[f.rarity].weight
+        * activity(f.time, hour)                       // gaussian day/dawnDusk/night activity
+        * depthAffinity(f.depth ?? [0, 1], castPower); // smoothstep habitat band
+      if (RARITIES[f.rarity].order >= 2) w *= band.rareBias;   // deep casts favor rare+
       if (RARITIES[f.rarity].order >= 2) w *= 1 + baitLvl * 0.15;
       pool.push({ f, w });
     }
@@ -92,14 +118,20 @@ export class FishingGame {
   }
 
   #beginWait(castPower) {
-    const isNight = this.isNight();
-    this.fish = this.pickFish(this.economy.zone, isNight, castPower);
+    const hour = this._hour ?? 12;
+    this.fish = this.pickFish(this.economy.zone, hour, castPower);
     if (!this.fish) { this.#cancelCast('nofish'); return; }
     this.fishWeight = rollWeight(this.fish);
+    // roll a consistent length from the same skew (heavy fish are long fish)
+    const sk = Math.pow(clamp((this.fishWeight - this.fish.weight[0]) / ((this.fish.weight[1] - this.fish.weight[0]) || 1), 0, 1), 1 / 1.7);
+    this.fishCm = +(this.fish.len[0] + (this.fish.len[1] - this.fish.len[0]) * sk).toFixed(1);
+    // exponential bite delay (Tidewater biteDelay): richer water bites sooner, 1.6s floor
     const baitLvl = this.economy.upgrades.bait;
-    let wait = rnd(WAIT.baseMin, WAIT.baseMax) / (1 + baitLvl * 0.18);
+    const rich = 0.45 + activity(this.fish.time, hour) + baitLvl * 0.18;
+    const mean = 3.0 / Math.min(rich, 1.8);
+    let wait = 2 + -Math.log(1 - Math.random() * 0.98) * mean * 0.55;
     if (RARITIES[this.fish.rarity].order >= 3) wait *= 0.8; // big fish commit faster
-    this.biteT = wait;
+    this.biteT = clamp(wait, 1.6, 9);
     this.bobbedT = 0;
     this.state = 'bobbing';
   }
@@ -128,7 +160,9 @@ export class FishingGame {
     this.state = 'fight';
     this.lastPerfect = perfect;
     this.#resetFight();
-    this.fight.stamina = f.stamina;
+    // trophy scaling: bigger individuals of a species fight noticeably longer
+    this.fight.staminaMax = f.stamina * Math.pow(clamp(this.fishWeight / f.weight[1], 0.15, 1), FIGHT.trophyPow);
+    this.fight.stamina = this.fight.staminaMax;
     if (perfect) {
       this.fight.progress = FIGHT.perfectSeed;
       this.fight.tension = FIGHT.perfectTension;
@@ -155,37 +189,43 @@ export class FishingGame {
     const up = this.economy.upgrades;
     const reeling = this.holdReeling;
 
-    // fish surge scheduling (pattern-driven)
+    const tired = clamp(1 - st.stamina / st.staminaMax, 0, 1); // 0 fresh .. 1 spent
+
+    // fish surge scheduling (pattern-driven; Tidewater: rarer and weaker as the fish tires)
     st.surgeT -= dt;
     if (st.surgeT <= 0) {
       st.surging = !st.surging;
-      const pattern = fish.pattern;
       if (st.surging) {
         const dur = { steady: rnd(0.5, 0.9), darting: rnd(0.25, 0.5), diver: rnd(0.6, 1.0), runner: rnd(0.8, 1.4), thrasher: rnd(0.3, 0.7) }[fish.pattern] ?? 0.6;
         st.surgeT = dur;
         this.juice.shake(2 + fish.strength * 0.12, 0.2);
       } else {
         const rest = { steady: rnd(0.7, 1.2), darting: rnd(0.25, 0.55), diver: rnd(0.9, 1.5), runner: rnd(0.5, 0.9), thrasher: rnd(0.2, 0.45) }[fish.pattern] ?? 0.7;
-        st.surgeT = rest * (1 - fish.speed * 0.003);
+        st.surgeT = rest * (1 + tired * 0.9); // tired fish rests longer between runs
       }
     }
+    st.surge += ((st.surging ? 1 : 0) - st.surge) * (1 - Math.exp(-dt * 6)); // smoothed surge
 
-    // stamina drain while reeling
-    if (reeling) {
-      st.stamina -= F.reelStaminaDrain * (1 + up.reel * 0.25) * dt;
-    }
+    // stamina: drains while the fish fights anywhere — 1x in the band, 0.3x outside.
+    // In-band pressure tires it 3.3x faster: the band is where the fight is won.
+    st.stamina -= dt / st.staminaMax * st.staminaMax * (inBandCheck(st.tension, F) ? F.bandDrain : F.offBandDrain) * (0.55 + up.reel * 0.12);
+
     const exhausted = st.stamina <= 0;
-    const effStrength = (exhausted ? fish.strength * 0.35 : fish.strength) * (st.phase === 2 ? 1.15 : 1); // phase 2: bosses genuinely enrage
+    // continuous tiring (replaces the old binary exhausted flip)
+    const effStrength = fish.strength * (1 - 0.65 * tired) * (st.phase === 2 ? 1.15 : 1); // phase 2: bosses genuinely enrage
 
-    // tension
-    if (reeling) st.tension += (F.tensionRise + effStrength * F.fishPullScale) * dt;
-    else st.tension -= F.tensionFall * dt;
-    if (st.surging) st.tension += effStrength * F.surgePullScale * dt;
-    st.tension = clamp(st.tension, 0, F.redHigh);
+    // tension inertia (Tidewater): tension chases a target exponentially —
+    // reeling pushes it up (fish pull + surge), releasing lets it fall toward the pull.
+    const pull = effStrength * (0.35 + 0.65 * st.surge);
+    const target = reeling ? F.reelBase + pull * F.pullScale : pull * F.freeScale;
+    const rate = reeling ? F.rateReel : F.rateFree;
+    st.tension += (target - st.tension) * (1 - Math.exp(-dt * rate));
+    st.tension = clamp(st.tension, 0, F.hardMax);
 
-    // progress (clamped at 0 so a long stall can't run away negatively)
     const inGreen = st.tension >= F.greenLow && st.tension <= F.greenHigh;
     const inRed = st.tension > F.greenHigh;
+
+    // progress
     if (inGreen) {
       st.progress += F.progressRate * (1 + up.rod * 0.22) * (exhausted ? F.progressStaminaBonus : 1) * dt;
       st.escapeT = 0;
@@ -210,10 +250,13 @@ export class FishingGame {
       if (st.reelTick <= 0) { this.audio.reelTick(inGreen ? 0.5 : 0.25); st.reelTick = 0.09 - (inGreen ? 0.02 : 0); }
     }
 
-    // snap: sustained red
+    // snap: sustained red zone (overload)
     const strainLimit = F.strainBase + up.line * 0.45;
     if (st.strain >= strainLimit) { this.#fail('snap'); return; }
-    // escape: no progress too long
+    // slack: released too long and the hook slips out (the missing counter-pressure)
+    st.slack = st.tension < F.slackLow ? st.slack + dt : Math.max(0, st.slack - dt * 2);
+    if (st.slack >= F.slackLimit) { this.#fail('slack'); return; }
+    // backstop: no progress for a long stretch
     if (st.escapeT >= F.escapeSeconds) { this.#fail('escape'); return; }
 
     // phase 2 for bosses at half stamina
@@ -264,7 +307,7 @@ export class FishingGame {
     const comboMult = this.economy.comboMult(this.combo);
     const perfect = this.lastPerfect;
     const value = calcValue(fish, this.fishWeight, { comboMult, perfect, logBonus: this.economy.logBonus() });
-    const { isNew } = this.economy.addCatch(fish, this.fishWeight, value);
+    const { isNew } = this.economy.addCatch(fish, this.fishWeight, value, this.fishCm);
 
     const R = RARITIES[fish.rarity];
     // ---- 타격감: hitstop scales with rarity ----
@@ -286,12 +329,14 @@ export class FishingGame {
     if (R.order >= 4) this.audio.bigCatch();
 
     this.juice.floatText(this.bobber.x, this.bobber.y - 46, `+${value.toLocaleString()}`, { color: '#ffd54a', size: 34 });
+    // cm floater under the value (trophy sizes stand out)
+    if (this.fishCm) this.juice.floatText(this.bobber.x, this.bobber.y - 4, `${this.fishCm}cm`, { color: '#bfe8ff', size: 20 });
     if (this.combo > 1) this.juice.floatText(this.bobber.x, this.bobber.y - 92, `COMBO x${this.combo}`, { color: '#ff9c40', size: 26 });
     if (isNew) this.juice.floatText(640, 566, t('fight.newSpecies'), { color: '#59d97e', size: 40 });
 
-    this.reveal = { fish, weight: this.fishWeight, value, perfect, combo: this.combo, isNew, t: 0 };
+    this.reveal = { fish, weight: this.fishWeight, cm: this.fishCm, value, perfect, combo: this.combo, isNew, t: 0 };
     this.state = 'reveal';
-    this.onEvent('catch', { fish, weight: this.fishWeight, value, perfect, combo: this.combo, isNew });
+    this.onEvent('catch', { fish, weight: this.fishWeight, cm: this.fishCm, value, perfect, combo: this.combo, isNew });
     this.fish = null;
   }
 

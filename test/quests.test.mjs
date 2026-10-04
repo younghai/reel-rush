@@ -220,12 +220,12 @@ try {
       'achievementState(null, null, null) is safe and unlocks nothing');
   }
   {
-    const st = quests.achievementState({ species: 35 }, {}, {});
+    const st = quests.achievementState({ species: 39 }, {}, {});
     const full = st.find((s) => s.id === 'full_log');
     ok(full && full.unlocked === true && full.isNew === true, 'species=35 unlocks full_log as isNew');
     eq(st.filter((s) => s.unlocked).map((s) => s.id).sort(), ['full_log', 'species_10', 'species_25'],
       'species thresholds unlock cumulatively (10, 25, 35)');
-    const saved = quests.achievementState({ species: 35 }, {}, { full_log: true });
+    const saved = quests.achievementState({ species: 39 }, {}, { full_log: true });
     const fullSaved = saved.find((s) => s.id === 'full_log');
     ok(fullSaved && fullSaved.unlocked === true && fullSaved.isNew === false,
       'saved full_log stays unlocked but is no longer new');

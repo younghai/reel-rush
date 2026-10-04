@@ -33,6 +33,7 @@ export class AudioEngine {
     this._noise = null;    // shared 1s white-noise AudioBuffer
     this._muted = false;
     this._lastTick = -1;   // reelTick rate limiter (context time)
+    this._cnt = {};        // category voice counters for LIMITS
   }
 
   /* ------------------------------------------------------- lifecycle --- */
@@ -115,6 +116,21 @@ export class AudioEngine {
   }
 
   _t0() { return this._ctx.currentTime + 0.001; }
+
+  // Category gate: true if a voice slot is available (count incremented).
+  _enter(cat) {
+    try {
+      const max = LIMITS[cat];
+      if (!max) return true;
+      const c = this._cnt[cat] || 0;
+      if (c >= max) return false;
+      this._cnt[cat] = c + 1;
+      return true;
+    } catch (e) { return true; }
+  }
+  _exit(cat) {
+    try { this._cnt[cat] = Math.max(0, (this._cnt[cat] || 0) - 1); } catch (e) { /* ignore */ }
+  }
 
   // Clamped attack/decay pair -> { a, d, dur }.
   _ad(o) {
@@ -230,8 +246,10 @@ export class AudioEngine {
 
   // Splash: lowpass noise burst + HF spray + rising "blub" sine chirps.
   splash(intensity = 0.7) {
-    if (!this._ready()) return;
+    if (!this._ready() || !this._enter('splash')) return;
     try {
+      setTimeout(() => this._exit('splash'), 900);
+      const _done = () => this._exit('splash');
       const i = Math.min(1, Math.max(0, intensity || 0));
       const t0 = this._t0();
       this._noiseVoice({
@@ -258,7 +276,8 @@ export class AudioEngine {
 
   // "!" telegraph: 180Hz sine drop + click transient.
   bite() {
-    if (!this._ready()) return;
+    if (!this._ready() || !this._enter('bite')) return;
+    setTimeout(() => this._exit('bite'), 500);
     try {
       const t0 = this._t0();
       this._tone({ at: t0, type: 'sine', freq: 180, endFreq: 80, attack: 0.004, decay: 0.16, gain: 0.5 });
@@ -300,7 +319,8 @@ export class AudioEngine {
 
   // Tension red zone: two thin detuned saws a semitone apart + vibrato LFO.
   strain() {
-    if (!this._ready()) return;
+    if (!this._ready() || !this._enter('strain')) return;
+    setTimeout(() => this._exit('strain'), 800);
     try {
       const ctx = this._ctx;
       const t0 = this._t0();
@@ -333,7 +353,8 @@ export class AudioEngine {
 
   // Line break: harsh HF noise crack + steep pitch drop.
   snap() {
-    if (!this._ready()) return;
+    if (!this._ready() || !this._enter('snap')) return;
+    setTimeout(() => this._exit('snap'), 700);
     try {
       const t0 = this._t0();
       this._noiseVoice({ at: t0, attack: 0.001, decay: 0.09, gain: 0.5, filter: { type: 'highpass', freq: 1200, q: 0.7 } });
@@ -345,7 +366,8 @@ export class AudioEngine {
 
   // Fish escaped: sad descending two-tone womp (second tone bends down).
   escape() {
-    if (!this._ready()) return;
+    if (!this._ready() || !this._enter('escape')) return;
+    setTimeout(() => this._exit('escape'), 900);
     try {
       const t0 = this._t0();
       this._tone({ at: t0, type: 'triangle', freq: 330, endFreq: 294, attack: 0.015, decay: 0.22, gain: 0.22 });
@@ -454,7 +476,8 @@ export class AudioEngine {
 
   // Purchase: cash-register double click + bright ding.
   buy() {
-    if (!this._ready()) return;
+    if (!this._ready() || !this._enter('buy')) return;
+    setTimeout(() => this._exit('buy'), 800);
     try {
       const t0 = this._t0();
       this._noiseVoice({ at: t0, attack: 0.001, decay: 0.02, gain: 0.2, filter: { type: 'bandpass', freq: 3200, q: 1.5 } });
@@ -466,7 +489,8 @@ export class AudioEngine {
 
   // Not enough money: low double-buzz (beating square pair, twice).
   deny() {
-    if (!this._ready()) return;
+    if (!this._ready() || !this._enter('deny')) return;
+    setTimeout(() => this._exit('deny'), 600);
     try {
       const t0 = this._t0();
       const buzz = (at) => {

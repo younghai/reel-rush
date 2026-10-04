@@ -183,20 +183,51 @@ export function drawUnderwater(ctx, sc, zone, night, t, g, dt) {
     ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, TAU); ctx.stroke();
   }
   ctx.globalAlpha = 1;
-  // ambient fish school
-  for (const f of sc.ambientFish) {
-    f.x += (f.flip ? f.v : -f.v) * dt;
-    if (f.x < -60) { f.x = W + 50; f.y = WATER_Y + 60 + Math.random() * 220; }
-    if (f.x > W + 60) { f.x = -50; f.y = WATER_Y + 60 + Math.random() * 220; }
+  // boids school: separation / alignment / cohesion + wander (O(n²), n=16 — fine)
+  const F2 = sc.ambientFish;
+  for (let i = 0; i < F2.length; i++) {
+    const b = F2[i];
+    let sx = 0, sy = 0, ax = 0, ay = 0, cx = 0, cy = 0, n = 0;
+    for (let j = 0; j < F2.length; j++) {
+      if (j === i) continue;
+      const o = F2[j];
+      const dx = o.x - b.x, dy = o.y - b.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 > 3600 || d2 < 1) continue; // neighbours within 60px
+      n++;
+      ax += o.vx; ay += o.vy;
+      cx += o.x; cy += o.y;
+      if (d2 < 400) { sx -= dx; sy -= dy; } // separate within 20px
+    }
+    if (n > 0) {
+      b.vx += (sx * 2.2 + (ax / n - b.vx) * 0.8 + (cx / n - b.x) * 0.15) * dt * 3;
+      b.vy += (sy * 2.2 + (ay / n - b.vy) * 0.8 + (cy / n - b.y) * 0.15) * dt * 3;
+    }
+    // wander + soft bounds
+    b.vx += Math.sin(t * 0.7 + b.wob) * 6 * dt;
+    b.vy += Math.cos(t * 0.5 + b.wob) * 3 * dt;
+    if (b.x < 60) b.vx += 30 * dt; if (b.x > W - 60) b.vx -= 30 * dt;
+    if (b.y < WATER_Y + 30) b.vy += 30 * dt; if (b.y > H - 40) b.vy -= 30 * dt;
+    // speed clamp (cruise..max)
+    const sp = Math.hypot(b.vx, b.vy) || 1;
+    const tgt = 18 + b.s * 40;
+    if (sp > tgt) { b.vx *= tgt / sp; b.vy *= tgt / sp; }
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    // draw: ellipse body angled to velocity
+    const ang = Math.atan2(b.vy, b.vx);
     ctx.globalAlpha = 0.22;
     ctx.fillStyle = '#0c2334';
-    const s = f.s;
+    ctx.save();
+    ctx.translate(b.x, b.y + Math.sin(t * 2 + b.wob) * 2);
+    ctx.rotate(ang);
+    const sz = 14 * b.s;
     ctx.beginPath();
-    ctx.ellipse(f.x, f.y + Math.sin(t * 2 + f.wob) * 3, 14 * s, 4.5 * s, 0, 0, TAU);
-    ctx.moveTo(f.x + (f.flip ? -14 * s : 14 * s), f.y);
-    ctx.lineTo(f.x + (f.flip ? -22 * s : 22 * s), f.y - 5 * s);
-    ctx.lineTo(f.x + (f.flip ? -22 * s : 22 * s), f.y + 5 * s);
+    ctx.ellipse(0, 0, sz, sz * 0.32, 0, 0, TAU);
+    ctx.moveTo(-sz, 0);
+    ctx.lineTo(-sz * 1.5, -sz * 0.36);
+    ctx.lineTo(-sz * 1.5, sz * 0.36);
     ctx.fill();
+    ctx.restore();
   }
   ctx.globalAlpha = 1;
   // seabed

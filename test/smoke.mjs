@@ -124,6 +124,10 @@ function economyComboCap() {
 console.log('== 4. fish table integrity + selection coverage ==');
 {
   ok(FISHES.length >= 32, `species count = ${FISHES.length}`);
+  ok(FISHES.every(f => Array.isArray(f.len) && f.len[0] <= f.len[1]), 'every species has a length range (cm)');
+  ok(FISHES.every(f => Array.isArray(f.depth) && f.depth[0] <= f.depth[1]), 'every species has a depth preference band');
+  const dd = FISHES.filter(f => f.time === 'dawnDusk');
+  ok(dd.length >= 4 && dd.every(f => ['pier', 'shallows', 'reef', 'open'].includes(f.zone)), `golden-hour species present (${dd.map(d => d.nameKo).join(',')})`);
   for (const z of ZONES) {
     for (const night of [false, true]) {
       const slot = night ? 'night' : 'day';
@@ -135,8 +139,9 @@ console.log('== 4. fish table integrity + selection coverage ==');
   const fg = new FishingGame({ juice: recorder('j'), audio: recorder('a'), economy: eco, fishes: FISHES, onEvent: () => {} });
   for (const z of ZONES) {
     const seen = new Set();
-    for (let i = 0; i < 20000; i++) {
-      const f = fg.pickFish(z.id, i % 2 === 0, Math.random());
+    for (let i = 0; i < 30000; i++) {
+      const hour = Math.random() * 30;      // full cycle incl. golden-hour edges
+      const f = fg.pickFish(z.id, hour, Math.random());
       if (f) seen.add(f.id);
     }
     const eligible = FISHES.filter(f => f.zone === z.id).map(f => f.id);
@@ -148,11 +153,18 @@ console.log('== 4. fish table integrity + selection coverage ==');
   const fg2 = new FishingGame({ juice: recorder('j'), audio: recorder('a'), economy: eco2, fishes: FISHES, onEvent: () => {} });
   const counts = {};
   for (let i = 0; i < 20000; i++) {
-    const f = fg2.pickFish('reef', false, 0.9);
+    const f = fg2.pickFish('reef', 12, 0.3); // noon, shallow cast -> common habitat
     counts[f.rarity] = (counts[f.rarity] || 0) + 1;
   }
   const c = counts.common || 0, m = counts.mythic || 0;
-  ok(c > m * 20, `reef day distribution: common=${c} >> mythic=${m}`);
+  ok(c > m * 20, `reef noon shallow-cast distribution: common=${c} >> mythic=${m}`);
+  // strategy: deep reef casts exclude shallow-water commons (habitat affinity)
+  let deepCommons = 0;
+  for (let i = 0; i < 4000; i++) {
+    const f = fg2.pickFish('reef', 12, 1.0);
+    if (['clownfish', 'parrotfish', 'butterflyfish'].includes(f.id)) deepCommons++;
+  }
+  ok(deepCommons === 0, `deep reef casts exclude shallow commons (got ${deepCommons})`);
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

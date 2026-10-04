@@ -31,6 +31,7 @@ const KO = {
   'toast.upgradeDone': '{icon} {name} 강화 완료!',
   'toast.sold': '판매 완료! +🪙{n}',
   'toast.bossFound': '👑 보스 발견: {name}!',
+  'toast.golden': '🌅 골든아워! 특별한 어종들이 활발해진다',
 
   // ---- state hints (main.js HINTS) ----
   'hint.idle': '🖱️ 클릭해서 캐스트!',
@@ -72,6 +73,7 @@ const KO = {
   'fight.perfect': 'PERFECT!',
   'fight.snap': '줄 끊어짐!',
   'fight.miss': '놓쳤다…!',
+  'fight.slack': '바늘이 풀렸다…!',
   'fight.enrage': '{name} 격노!!',
   'fight.newSpecies': 'NEW SPECIES!',
 
@@ -122,6 +124,7 @@ const EN = {
   'toast.upgradeDone': '{icon} {name} upgraded!',
   'toast.sold': 'Sold! +🪙{n}',
   'toast.bossFound': '👑 Boss spotted: {name}!',
+  'toast.golden': '🌅 Golden hour! Special fish are on the move',
 
   // ---- state hints ----
   'hint.idle': '🖱️ Click to cast!',
@@ -163,6 +166,7 @@ const EN = {
   'fight.perfect': 'PERFECT!',
   'fight.snap': 'LINE SNAPPED!',
   'fight.miss': 'MISSED…!',
+  'fight.slack': 'HOOK SLIPPED…!',
   'fight.enrage': '{name} ENRAGED!!',
   'fight.newSpecies': 'NEW SPECIES!',
 

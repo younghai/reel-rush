@@ -282,7 +282,7 @@ export const ACHIEVEMENTS = [
   {
     id: 'full_log', icon: '👑',
     nameKo: '완벽한 도감', nameEn: 'Completionist',
-    descKo: '35종의 물고기를 모두 기록하세요.', descEn: 'Log all 35 species.',
+    descKo: '39종의 물고기를 모두 기록하세요.', descEn: 'Log all 39 species.',
     check: (s) => num(s && s.species) >= 35,
   },
 ];

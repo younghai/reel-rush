@@ -191,6 +191,13 @@ function renderShop() {
   el.tabCooler.hidden = shopTab !== 'cooler';
   if (shopTab === 'upgrades') renderUpgrades(); else renderCooler();
 }
+// named equipment per level (Tidewater Gear-style): "6호 카본 / 15 lb mono"
+function gearLabel(u, lv) {
+  const labels = u.labels;
+  if (!labels) return '';
+  const i = Math.min(lv, labels.length - 1);
+  return getLocale() === 'ko' ? labels[i][0] : labels[i][1];
+}
 // localized upgrade description with per-level params (mirrors config.js formulas)
 function upgDesc(u, lv) {
   switch (u.id) {
@@ -212,7 +219,7 @@ function renderUpgrades() {
     row.innerHTML = `
       <div class="upg-icon">${u.icon}</div>
       <div class="upg-info">
-        <div class="upg-name">${t('upg.' + u.id + '.name')} <span style="color:var(--dim);font-size:13px">${t('log.level', { n: lv })}${lv >= max ? ' ' + t('log.max') : ''}</span></div>
+        <div class="upg-name">${t('upg.' + u.id + '.name')} <span style="color:var(--dim);font-size:12.5px">${gearLabel(u, lv)} · ${t('log.level', { n: lv })}${lv >= max ? ' ' + t('log.max') : ''}</span></div>
         <div class="upg-desc">${upgDesc(u, Math.min(lv + 1, max))}</div>
         <div class="upg-pips">${Array.from({ length: max }, (_, i) => `<div class="pip ${i < lv ? 'on' : ''}"></div>`).join('')}</div>
       </div>
@@ -243,7 +250,7 @@ function renderCooler() {
     row.innerHTML = `
       <span class="rarity-tag" style="background:${R.color}22;color:${R.color};border:1px solid ${R.color}55">${rarityName(c.rarity)}</span>
       <span>${fishName(fish)}</span>
-      <span class="rw">${c.weight.toFixed(2)}kg</span>
+      <span class="rw">${c.weight.toFixed(2)}kg${c.cm ? ' · ' + c.cm + 'cm' : ''}</span>
       <span class="rv">+${c.value.toLocaleString()}</span>`;
     el.coolerList.appendChild(row);
   });
@@ -393,6 +400,7 @@ function updateHint() {
 }
 
 // ---------- main loop ----------
+let lastPhase = 'day';
 let last = performance.now();
 let saveT = 0;
 let lastFrameAt = performance.now();
@@ -408,6 +416,16 @@ function step(dt) {
   if (introDone) {
     const gdt = juice.update(dt);
     fg._night = scene.isNight(scene.worldT);
+    fg._hour = scene.hourOf(scene.worldT);   // game-clock hour (activity model input)
+    const phase = scene.phaseOf(scene.worldT);
+    if (phase !== lastPhase) {
+      if ((phase === 'dusk' || phase === 'dawn') && introDone) {
+        toast(t('toast.golden'), 'gold');
+        audio.bigCatch();
+        juice.flash('#ffb02e', 0.18, 300);
+      }
+      lastPhase = phase;
+    }
     music.setDayNight(scene.nightAmount(scene.worldT));
     if (__RR.autoFight && fg.state === 'fight') {
       // QA driver: keep tension inside the green band — ease off harder during fish surges

@@ -33,26 +33,39 @@ export const DEPTH_BANDS = [
 ];
 
 export const UPGRADES = [
-  { id: 'rod',  icon: '🎣', nameKo: '낚싯대', desc: lv => `후킹 창 +${lv * 10}%, 파이팅 진행 속도 +${lv * 22}%`, costs: [150, 600, 2200, 8000] },
-  { id: 'line', icon: '🧵', nameKo: '낚싯줄', desc: lv => `고속 회전(위험) 허용 시간 +${(lv * 0.45).toFixed(2)}초`, costs: [120, 500, 1800, 6500] },
-  { id: 'reel', icon: '🌀', nameKo: '릴',     desc: lv => `릴링 힘 +${lv * 25}% (스태미나 소모↑)`, costs: [200, 750, 2600, 9500] },
-  { id: 'bait', icon: '🪱', nameKo: '미끼',   desc: lv => `입질 대기 -${lv * 18}%, 희귀 어종 확률 +${lv * 15}%`, costs: [250, 900, 3200, 11000] },
+  { id: 'rod',  icon: '🎣', nameKo: '낚싯대', desc: lv => `후킹 창 +${lv * 10}%, 파이팅 진행 속도 +${lv * 22}%`, costs: [150, 600, 2200, 8000],
+    labels: [['나무낚싯대', 'Hand-me-down rod'], ['카본 낚싯대', 'Carbon rod'], ['서프 캐스팅 로드', 'Surf casting rod'], ['몬스터 헌터 로드', 'Monster hunter rod']] },
+  { id: 'line', icon: '🧵', nameKo: '낚싯줄', desc: lv => `고속 회전(위험) 허용 시간 +${(lv * 0.45).toFixed(2)}초`, costs: [120, 500, 1800, 6500],
+    labels: [['3호 나일론', '8 lb mono'], ['6호 카본', '15 lb mono'], ['12호 브레이드', '30 lb braid'], ['24호 브레이드', '60 lb braid']] },
+  { id: 'reel', icon: '🌀', nameKo: '릴',     desc: lv => `릴링 힘 +${lv * 25}% (스태미나 소모↑)`, costs: [200, 750, 2600, 9500],
+    labels: [['낡은 스피닝 릴', 'Old spinning reel'], ['스무스 스피닝 릴', 'Smooth spinning reel'], ['베이트 캐스팅 릴', 'Baitcasting reel'], ['일렉트릭 릴', 'Electric reel']] },
+  { id: 'bait', icon: '🪱', nameKo: '미끼',   desc: lv => `입질 대기 -${lv * 18}%, 희귀 어종 확률 +${lv * 15}%`, costs: [250, 900, 3200, 11000],
+    labels: [['지렁이', 'Worms'], ['생새우', 'Live shrimp'], ['크릴 떡밥', 'Krill bait'], ['몬스터 전용 미끼', 'Monster chum']] },
 ];
 
 export const FIGHT = {
-  tensionRise: 52,        // base tension/sec while reeling
-  tensionFall: 95,        // tension/sec while NOT reeling
-  fishPullScale: 0.5,     // fish strength contribution while reeling
-  surgePullScale: 0.9,    // extra tension during fish surge
+  // tension inertia (Tidewater-style): tension chases a target exponentially
+  reelBase: 22,           // floor target while reeling
+  pullScale: 0.85,        // how strongly fish strength drives the reeling target
+  freeScale: 0.45,        // released target = pull * this * surge factor
+  rateReel: 2.2,          // convergence rate while reeling (1/s)
+  rateFree: 3.0,          // convergence rate while released
+  hardMax: 115,           // tension clamp — above 100 = over the line's strength
   greenLow: 25, greenHigh: 80,
-  redHigh: 100,
   strainBase: 1.25,       // sec of sustained red before snap (line lvl adds)
-  progressRate: 17,       // %/sec in green band at rod 0
+  // slack: released too long and the hook simply falls out
+  slackLow: 12,           // tension below this counts as slack
+  slackLimit: 2.4,        // sec of slack before the hook slips
+  // tiring
+  reelStaminaDrain: 13,   // base drain rate reference (kept for compat)
+  bandDrain: 1.0,         // stamina drain multiplier inside the green band
+  offBandDrain: 0.3,      // ... and outside it (fighting the fish tires it anywhere)
+  trophyPow: 0.35,        // staminaMax *= (kg/maxKg)^trophyPow — big fish fight longer
   progressStaminaBonus: 1.9, // multiplier when fish stamina depleted
+  progressRate: 17,       // %/sec in green band at rod 0
   progressDecayLow: 5,    // %/sec decay when tension below green
   progressDecayRed: 11,   // %/sec decay in red
-  reelStaminaDrain: 13,   // fish stamina/sec at reel 0
-  escapeSeconds: 9,       // progress<=0 this long -> escape
+  escapeSeconds: 9,       // backstop: no progress this long -> escape
   perfectSeed: 15,        // progress % from PERFECT hookset
   perfectTension: 38,     // starting tension on perfect
   windowBase: 0.62,       // strike window sec (minus fish speed/rod factors)

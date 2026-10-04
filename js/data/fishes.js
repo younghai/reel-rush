@@ -11,6 +11,8 @@ export const FISHES = [
     zone: 'pier',
     time: 'any',
     weight: [0.1, 0.8],
+    len: [14, 25],   // total length cm (reveals/log)
+    depth: [0, 0.7], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 12,
     stamina: 18,
     strength: 16,
@@ -32,6 +34,8 @@ export const FISHES = [
     zone: 'pier',
     time: 'day',
     weight: [0.02, 0.1],
+    len: [7, 12],   // total length cm (reveals/log)
+    depth: [0, 0.5], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 9,
     stamina: 16,
     strength: 15,
@@ -53,6 +57,8 @@ export const FISHES = [
     zone: 'pier',
     time: 'any',
     weight: [0.3, 1.8],
+    len: [28, 60],   // total length cm (reveals/log)
+    depth: [0.1, 0.8], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 16,
     stamina: 26,
     strength: 24,
@@ -74,6 +80,8 @@ export const FISHES = [
     zone: 'pier',
     time: 'day',
     weight: [0.5, 2.5],
+    len: [28, 58],   // total length cm (reveals/log)
+    depth: [0, 0.5], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 22,
     stamina: 30,
     strength: 28,
@@ -95,6 +103,8 @@ export const FISHES = [
     zone: 'pier',
     time: 'any',
     weight: [0.4, 2.2],
+    len: [24, 45],   // total length cm (reveals/log)
+    depth: [0.1, 0.7], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 26,
     stamina: 32,
     strength: 30,
@@ -116,6 +126,8 @@ export const FISHES = [
     zone: 'pier',
     time: 'night',
     weight: [0.3, 2.5],
+    len: [45, 100],   // total length cm (reveals/log)
+    depth: [0.3, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 42,
     stamina: 35,
     strength: 34,
@@ -130,6 +142,99 @@ export const FISHES = [
     color2: '#b8b98a',
   },
 
+  {
+    id: 'hairtail',
+    name: 'Largehead Hairtail',
+    nameKo: '갈치',
+    rarity: 'rare',
+    zone: 'pier',
+    time: 'dawnDusk',
+    weight: [0.3, 2.5],
+    len: [55, 115],
+    depth: [0.4, 1],
+    baseValue: 65,
+    stamina: 46,
+    strength: 44,
+    speed: 52,
+    pattern: 'runner',
+    boss: false,
+    desc: 'A living silver blade that cuts the surface when the light turns.',
+    descKo: '물빛이 바뀌는 순간 수면을 가르는 은빛 칼날.',
+    scale: 1.3,
+    shape: 'long',
+    color1: '#c4d4e2',
+    color2: '#f2f6fa',
+  },
+  {
+    id: 'seabass',
+    name: 'Korean Seabass',
+    nameKo: '농어',
+    rarity: 'uncommon',
+    zone: 'shallows',
+    time: 'dawnDusk',
+    weight: [0.8, 6],
+    len: [38, 88],
+    depth: [0.2, 0.9],
+    baseValue: 46,
+    stamina: 42,
+    strength: 40,
+    speed: 55,
+    pattern: 'runner',
+    boss: false,
+    desc: 'Patrols the shallows in golden light, striking anything that glitters.',
+    descKo: '물빛이 황금빛으로 바뀌면 얕은만을 순찰하며 반짝이는 것은 무엇이든 덮친다.',
+    scale: 1.3,
+    shape: 'slim',
+    color1: '#6a8aa0',
+    color2: '#d8e4ea',
+  },
+  {
+    id: 'madai',
+    name: 'Red Seabream',
+    nameKo: '참돔',
+    rarity: 'uncommon',
+    zone: 'reef',
+    time: 'dawnDusk',
+    weight: [0.5, 5],
+    len: [28, 68],
+    depth: [0.2, 0.9],
+    baseValue: 52,
+    stamina: 40,
+    strength: 38,
+    speed: 34,
+    pattern: 'steady',
+    boss: false,
+    desc: 'Cruises the reef edge at first and last light, proud and deliberate.',
+    descKo: '아침과 저녁 빛이 스밀 때 암초 가장자리를 품위 있게 오간다.',
+    scale: 1.2,
+    shape: 'deep',
+    color1: '#c07878',
+    color2: '#e8d4cc',
+  },
+  {
+    id: 'sailfish',
+    name: 'Indo-Pacific Sailfish',
+    nameKo: '돛새치',
+    rarity: 'epic',
+    zone: 'open',
+    time: 'dawnDusk',
+    weight: [20, 70],
+    len: [145, 240],
+    depth: [0.7, 1],
+    baseValue: 240,
+    stamina: 76,
+    strength: 74,
+    speed: 88,
+    pattern: 'runner',
+    boss: false,
+    desc: 'Raises its sail at dusk and turns the open sea into a racetrack.',
+    descKo: '황혼이면 돛을 펼쳐 넓은 바다를 주행로로 만든다.',
+    scale: 2.2,
+    shape: 'slim',
+    color1: '#2a4a7a',
+    color2: '#9ac4e4',
+  },
+
   // ─── SHALLOWS ───────────────────────────────────────────────────────────
   {
     id: 'sea-bream',
@@ -139,6 +244,8 @@ export const FISHES = [
     zone: 'shallows',
     time: 'any',
     weight: [0.5, 3.0],
+    len: [24, 50],   // total length cm (reveals/log)
+    depth: [0, 0.7], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 18,
     stamina: 30,
     strength: 28,
@@ -160,6 +267,8 @@ export const FISHES = [
     zone: 'shallows',
     time: 'any',
     weight: [0.4, 2.5],
+    len: [30, 52],   // total length cm (reveals/log)
+    depth: [0, 0.5], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 14,
     stamina: 28,
     strength: 26,
@@ -181,6 +290,8 @@ export const FISHES = [
     zone: 'shallows',
     time: 'day',
     weight: [0.1, 0.8],
+    len: [18, 34],   // total length cm (reveals/log)
+    depth: [0.1, 0.7], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 16,
     stamina: 26,
     strength: 25,
@@ -202,6 +313,8 @@ export const FISHES = [
     zone: 'shallows',
     time: 'any',
     weight: [0.8, 6.0],
+    len: [32, 68],   // total length cm (reveals/log)
+    depth: [0.3, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 32,
     stamina: 38,
     strength: 40,
@@ -223,6 +336,8 @@ export const FISHES = [
     zone: 'shallows',
     time: 'day',
     weight: [2.0, 12.0],
+    len: [38, 88],   // total length cm (reveals/log)
+    depth: [0.4, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 38,
     stamina: 42,
     strength: 44,
@@ -244,6 +359,8 @@ export const FISHES = [
     zone: 'shallows',
     time: 'night',
     weight: [0.5, 3.0],
+    len: [18, 34],   // total length cm (reveals/log)
+    depth: [0.4, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 60,
     stamina: 45,
     strength: 42,
@@ -265,6 +382,8 @@ export const FISHES = [
     zone: 'shallows',
     time: 'night',
     weight: [1.5, 15.0],
+    len: [55, 140],   // total length cm (reveals/log)
+    depth: [0.5, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 68,
     stamina: 45,
     strength: 44,
@@ -279,6 +398,7 @@ export const FISHES = [
     color2: '#b0acb8',
   },
 
+
   // ─── REEF ───────────────────────────────────────────────────────────────
   {
     id: 'clownfish',
@@ -288,6 +408,8 @@ export const FISHES = [
     zone: 'reef',
     time: 'any',
     weight: [0.05, 0.25],
+    len: [7, 13],   // total length cm (reveals/log)
+    depth: [0, 0.5], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 20,
     stamina: 38,
     strength: 36,
@@ -309,6 +431,8 @@ export const FISHES = [
     zone: 'reef',
     time: 'day',
     weight: [0.8, 4.0],
+    len: [28, 58],   // total length cm (reveals/log)
+    depth: [0.1, 0.7], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 24,
     stamina: 45,
     strength: 42,
@@ -330,6 +454,8 @@ export const FISHES = [
     zone: 'reef',
     time: 'day',
     weight: [0.1, 0.5],
+    len: [11, 17],   // total length cm (reveals/log)
+    depth: [0, 0.5], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 45,
     stamina: 48,
     strength: 40,
@@ -351,6 +477,8 @@ export const FISHES = [
     zone: 'reef',
     time: 'any',
     weight: [2.0, 10.0],
+    len: [55, 130],   // total length cm (reveals/log)
+    depth: [0.4, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 55,
     stamina: 52,
     strength: 48,
@@ -372,6 +500,8 @@ export const FISHES = [
     zone: 'reef',
     time: 'any',
     weight: [0.3, 1.5],
+    len: [23, 37],   // total length cm (reveals/log)
+    depth: [0.2, 0.8], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 62,
     stamina: 50,
     strength: 44,
@@ -393,6 +523,8 @@ export const FISHES = [
     zone: 'reef',
     time: 'night',
     weight: [1.0, 8.0],
+    len: [55, 140],   // total length cm (reveals/log)
+    depth: [0.5, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 95,
     stamina: 55,
     strength: 52,
@@ -414,6 +546,8 @@ export const FISHES = [
     zone: 'reef',
     time: 'day',
     weight: [20, 80],
+    len: [48, 100],   // total length cm (reveals/log)
+    depth: [0.4, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 150,
     stamina: 58,
     strength: 58,
@@ -435,6 +569,8 @@ export const FISHES = [
     zone: 'reef',
     time: 'any',
     weight: [150, 260],
+    len: [180, 260],   // total length cm (reveals/log)
+    depth: [0.6, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 1500,
     stamina: 95,
     strength: 97,
@@ -449,6 +585,7 @@ export const FISHES = [
     color2: '#b82838',
   },
 
+
   // ─── OPEN SEA ───────────────────────────────────────────────────────────
   {
     id: 'skipjack-tuna',
@@ -458,6 +595,8 @@ export const FISHES = [
     zone: 'open',
     time: 'any',
     weight: [1.5, 8.0],
+    len: [38, 78],   // total length cm (reveals/log)
+    depth: [0.3, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 34,
     stamina: 55,
     strength: 52,
@@ -479,6 +618,8 @@ export const FISHES = [
     zone: 'open',
     time: 'day',
     weight: [0.2, 0.9],
+    len: [24, 34],   // total length cm (reveals/log)
+    depth: [0, 0.6], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 32,
     stamina: 52,
     strength: 50,
@@ -500,6 +641,8 @@ export const FISHES = [
     zone: 'open',
     time: 'any',
     weight: [4, 25],
+    len: [75, 145],   // total length cm (reveals/log)
+    depth: [0.4, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 85,
     stamina: 66,
     strength: 62,
@@ -521,6 +664,8 @@ export const FISHES = [
     zone: 'open',
     time: 'night',
     weight: [60, 230],
+    len: [150, 300],   // total length cm (reveals/log)
+    depth: [0.5, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 110,
     stamina: 70,
     strength: 68,
@@ -542,6 +687,8 @@ export const FISHES = [
     zone: 'open',
     time: 'day',
     weight: [40, 200],
+    len: [110, 260],   // total length cm (reveals/log)
+    depth: [0.6, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 170,
     stamina: 74,
     strength: 72,
@@ -563,6 +710,8 @@ export const FISHES = [
     zone: 'open',
     time: 'day',
     weight: [400, 900],
+    len: [280, 440],   // total length cm (reveals/log)
+    depth: [0.7, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 650,
     stamina: 78,
     strength: 76,
@@ -584,6 +733,8 @@ export const FISHES = [
     zone: 'open',
     time: 'any',
     weight: [150, 450],
+    len: [140, 245],   // total length cm (reveals/log)
+    depth: [0.6, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 750,
     stamina: 78,
     strength: 78,
@@ -598,6 +749,7 @@ export const FISHES = [
     color2: '#c8d4e0',
   },
 
+
   // ─── ABYSS ──────────────────────────────────────────────────────────────
   {
     id: 'lanternfish',
@@ -607,6 +759,8 @@ export const FISHES = [
     zone: 'abyss',
     time: 'night',
     weight: [0.01, 0.05],
+    len: [2.5, 5.5],   // total length cm (reveals/log)
+    depth: [0.4, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 48,
     stamina: 64,
     strength: 62,
@@ -628,6 +782,8 @@ export const FISHES = [
     zone: 'abyss',
     time: 'night',
     weight: [0.01, 0.04],
+    len: [2.5, 5.5],   // total length cm (reveals/log)
+    depth: [0.4, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 52,
     stamina: 66,
     strength: 63,
@@ -649,6 +805,8 @@ export const FISHES = [
     zone: 'abyss',
     time: 'night',
     weight: [0.3, 0.6],
+    len: [7, 14],   // total length cm (reveals/log)
+    depth: [0.6, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 140,
     stamina: 78,
     strength: 68,
@@ -670,6 +828,8 @@ export const FISHES = [
     zone: 'abyss',
     time: 'any',
     weight: [0.1, 0.5],
+    len: [9, 16],   // total length cm (reveals/log)
+    depth: [0.5, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 165,
     stamina: 80,
     strength: 74,
@@ -691,6 +851,8 @@ export const FISHES = [
     zone: 'abyss',
     time: 'night',
     weight: [1.0, 9.0],
+    len: [25, 85],   // total length cm (reveals/log)
+    depth: [0.6, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 260,
     stamina: 84,
     strength: 82,
@@ -712,6 +874,8 @@ export const FISHES = [
     zone: 'abyss',
     time: 'any',
     weight: [80, 250],
+    len: [240, 370],   // total length cm (reveals/log)
+    depth: [0.7, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 300,
     stamina: 86,
     strength: 84,
@@ -733,6 +897,8 @@ export const FISHES = [
     zone: 'abyss',
     time: 'night',
     weight: [400, 800],
+    len: [300, 480],   // total length cm (reveals/log)
+    depth: [0.8, 1], // preferred cast-depth band 0..1 (smoothstep habitat)
     baseValue: 2500,
     stamina: 96,
     strength: 98,
