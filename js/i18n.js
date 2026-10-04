@@ -53,6 +53,13 @@ const KO = {
   'ui.titleTime': '시간대',
   'ui.titleZone': '어장',
   'ui.titleMute': '소리',
+  'ui.tabQuests': '퀘스트',
+  'ui.panelQuests': '퀘스트',
+  'ui.tabDaily': '일일 퀘스트',
+  'ui.tabAch': '업적',
+  'toast.questDone': '📋 퀘스트 완료! 보상 수령: 🪙{n}',
+  'toast.achUnlocked': '🏅 업적 해금: {name}!',
+  'toast.newDay': '📋 새로운 일일 퀘스트가 도착했어요!',
 
   // ---- collection log (main.js) ----
   'log.progress': '도감 완성도 {caught} / {total}종 — 판매 보너스 +{bonus}%',
@@ -137,6 +144,13 @@ const EN = {
   'ui.titleTime': 'Time',
   'ui.titleZone': 'Zone',
   'ui.titleMute': 'Sound',
+  'ui.tabQuests': 'Quests',
+  'ui.panelQuests': 'Quests',
+  'ui.tabDaily': 'Daily Quests',
+  'ui.tabAch': 'Achievements',
+  'toast.questDone': '📋 Quest complete! Reward: 🪙{n}',
+  'toast.achUnlocked': '🏅 Achievement unlocked: {name}!',
+  'toast.newDay': '📋 New daily quests have arrived!',
 
   // ---- collection log ----
   'log.progress': 'Log {caught} / {total} species — sell bonus +{bonus}%',

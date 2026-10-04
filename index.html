@@ -32,6 +32,7 @@
         <div id="zoneChips"></div>
       </div>
       <div id="hud-br">
+        <button class="pill-btn" id="btnQuests">📋 <span data-i18n="ui.tabQuests">퀘스트</span></button>
         <button class="pill-btn" id="btnLog">📖 <span data-i18n="ui.tabLog">도감</span></button>
         <button class="pill-btn" id="btnShop">🛒 <span data-i18n="ui.tabShop">상점</span> <span id="coolerBadge" hidden>0</span></button>
       </div>
@@ -60,6 +61,19 @@
       <div class="panel-body">
         <div id="logProgress" class="log-progress"></div>
         <div id="logGrid" class="log-grid"></div>
+      </div>
+    </div>
+
+    <!-- Quests & achievements -->
+    <div class="panel" id="questsPanel" hidden>
+      <div class="panel-head"><h2>📋 <span data-i18n="ui.panelQuests">퀘스트</span></h2><button class="close-btn" data-close="questsPanel">✕</button></div>
+      <div class="panel-body">
+        <div class="shop-tabs">
+          <button class="tab active" data-qtab="daily"><span data-i18n="ui.tabDaily">일일 퀘스트</span></button>
+          <button class="tab" data-qtab="achievements"><span data-i18n="ui.tabAch">업적</span></button>
+        </div>
+        <div id="qtab-daily"></div>
+        <div id="qtab-achievements" hidden></div>
       </div>
     </div>
 

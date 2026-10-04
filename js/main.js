@@ -8,6 +8,7 @@ import { FishingGame } from './fishing.js';
 import { Economy } from './economy.js';
 import { t, fishName, rarityName, zoneName, timeName, getLocale, setLocale, detectLocale } from './i18n.js';
 import { music } from './music.js';
+import { quests, ACHIEVEMENTS } from './quests.js';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -36,7 +37,7 @@ const el = {
   comboPill: $('#comboPill'), comboNum: $('#comboNum'),
   timeIcon: $('#timeIcon'), zoneIcon: $('#zoneIcon'), zoneName: $('#zoneName'),
   muteBtn: $('#muteBtn'), localeBtn: $('#localeBtn'), localeLabel: $('#localeLabel'), musicBtn: $('#musicBtn'), zoneChips: $('#zoneChips'),
-  btnLog: $('#btnLog'), btnShop: $('#btnShop'), coolerBadge: $('#coolerBadge'),
+  btnLog: $('#btnLog'), btnShop: $('#btnShop'), btnQuests: $('#btnQuests'), questsPanel: $('#questsPanel'), qtabDaily: $('#qtab-daily'), qtabAch: $('#qtab-achievements'), coolerBadge: $('#coolerBadge'),
   hint: $('#hint'), toasts: $('#toasts'),
   shopPanel: $('#shopPanel'), logPanel: $('#logPanel'),
   tabUpgrades: $('#tab-upgrades'), tabCooler: $('#tab-cooler'),
@@ -54,6 +55,95 @@ function toast(msg, kind = '') {
   setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 320); }, 2200);
 }
 
+// ---------- quests & achievements ----------
+const todayKey = () => {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+};
+const QUEST_REWARDS = { catch_n_fish: 250, perfect_hooks: 300, sell_fish: 200, catch_at_night: 300, combo_x3: 400, earn_coins: 350, big_fish: 400 };
+let questState = quests.deserialize(economy.s.quests ? JSON.stringify(economy.s.quests) : null);
+let achSeenToday = false;
+function persistQuests() { economy.s.quests = questState; economy.save(); }
+function questEvent(event) {
+  const newly = quests.record(questState, todayKey(), event);
+  persistQuests();
+  for (const q of newly) {
+    if (!q.claimed) toast(t('toast.questDone', { n: (QUEST_REWARDS[q.id] ?? 200).toLocaleString() }), 'gold');
+    juice.flash('#59d97e', 0.2, 160);
+  }
+  if (!el.questsPanel.hidden) renderQuests();
+  checkAchievements();
+}
+function checkAchievements() {
+  const states = quests.achievementState(economy.stats, economy.s.log, economy.s.achievements);
+  let changed = false;
+  for (const a of states) {
+    if (a.isNew && a.unlocked) {
+      const meta = ACHIEVEMENTS.find(x => x.id === a.id);
+      const name = getLocale() === 'ko' ? meta.nameKo : meta.nameEn;
+      toast(t('toast.achUnlocked', { name }), 'gold');
+      juice.confetti(W / 2, 220, 60);
+      audio.bigCatch();
+      economy.s.achievements[a.id] = true;
+      changed = true;
+    }
+  }
+  if (changed) { economy.save(); if (!el.questsPanel.hidden) renderQuests(); }
+}
+let qTab = 'daily';
+function renderQuests() {
+  document.querySelectorAll('[data-qtab]').forEach(b => b.classList.toggle('active', b.dataset.qtab === qTab));
+  el.qtabDaily.hidden = qTab !== 'daily';
+  el.qtabAch.hidden = qTab !== 'achievements';
+  const ko = getLocale() === 'ko';
+  if (qTab === 'daily') {
+    el.qtabDaily.innerHTML = '';
+    for (const q of quests.daily(todayKey(), questState)) {
+      q.claimed = !!(questState.claimed && questState.claimed[q.id]); // claim survives reload (quests.js resets it on rebuild)
+      const row = document.createElement('div');
+      row.className = 'quest-row' + (q.done ? ' done' : '');
+      const reward = QUEST_REWARDS[q.id] ?? 200;
+      row.innerHTML = `
+        <div class="quest-icon">${q.icon}</div>
+        <div class="quest-info">
+          <div class="quest-name">${ko ? q.textKo : q.textEn}</div>
+          <div class="quest-bar"><div style="width:${Math.min(100, q.progress / q.target * 100)}%"></div></div>
+          <div class="quest-count">${Math.min(q.progress, q.target)} / ${q.target} · 🪙${reward.toLocaleString()}</div>
+        </div>
+        <button class="claim-btn" ${q.done && !q.claimed ? '' : 'disabled'}>${q.claimed ? '✓' : '🪙'}</button>`;
+      if (q.done && !q.claimed) {
+        row.querySelector('.claim-btn').addEventListener('click', () => {
+          questState.done[q.id] = true;
+          questState.claimed = questState.claimed || {};
+          questState.claimed[q.id] = true;
+          economy.addCoins(reward);
+          persistQuests();
+          audio.buy();
+          for (let i = 0; i < 5; i++) setTimeout(() => audio.coin(i), i * 70);
+          bumpCoins();
+          juice.confetti(W / 2, 220, 40);
+          renderQuests();
+        });
+      }
+      el.qtabDaily.appendChild(row);
+    }
+  } else {
+    el.qtabAch.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'ach-grid';
+    for (const a of ACHIEVEMENTS) {
+      const unlocked = !!economy.s.achievements[a.id];
+      const card = document.createElement('div');
+      card.className = 'ach-card' + (unlocked ? ' unlocked' : '');
+      card.innerHTML = `<div class="ic">${unlocked ? a.icon : '🔒'}</div><div><b>${ko ? a.nameKo : a.nameEn}</b><span>${ko ? a.descKo : a.descEn}</span></div>`;
+      grid.appendChild(card);
+    }
+    el.qtabAch.appendChild(grid);
+  }
+}
+document.querySelectorAll('[data-qtab]').forEach(b => b.addEventListener('click', () => { qTab = b.dataset.qtab; audio.ui(); renderQuests(); }));
+el.btnQuests.addEventListener('click', () => { audio.ui(); renderQuests(); el.questsPanel.hidden = false; });
+
 // ---------- events ----------
 function handleEvent(type, d) {
   if (type === 'catch') {
@@ -62,11 +152,15 @@ function handleEvent(type, d) {
     el.coolerBadge.textContent = economy.cooler.length;
     el.coolerCount.textContent = economy.cooler.length;
     updateCombo();
+    const night = scene.isNight(scene.worldT);
+    if (night) economy.stats.nightCatches++;
+    questEvent({ type: 'catch', night, weightKg: d.weight, combo: d.combo });
+    if (d.perfect) questEvent({ type: 'perfect' });
   } else if (type === 'fail') {
     updateCombo();
-    if (d.kind === 'snap') toast(t('toast.snap'), 'red');
-    else if (d.kind === 'miss') toast(t('toast.miss'), 'red');
-    else if (d.kind === 'escape') toast(t('toast.escape'), 'red');
+    if (d.kind === 'snap') { toast(t('toast.snap'), 'red'); questEvent({ type: 'snap' }); }
+    else if (d.kind === 'miss') { toast(t('toast.miss'), 'red'); questEvent({ type: 'escape' }); }
+    else if (d.kind === 'escape') { toast(t('toast.escape'), 'red'); questEvent({ type: 'escape' }); }
   } else if (type === 'fightstart' && d.fish.boss) {
     toast(t('toast.bossFound', { name: fishName(d.fish) }), 'gold');
     juice.flash('#ff5d9e', 0.25, 260);
@@ -166,6 +260,7 @@ el.sellAllBtn.addEventListener('click', () => {
     bumpCoins();
     el.coolerBadge.hidden = true;
     renderCooler();
+    questEvent({ type: 'sell', total });
   }
 });
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { shopTab = b.dataset.tab; audio.ui(); renderShop(); }));
@@ -226,7 +321,7 @@ function openPanel(id) {
   if (id === 'logPanel') renderLog();
   $(`#${id}`).hidden = false;
 }
-function closePanels() { el.shopPanel.hidden = true; el.logPanel.hidden = true; }
+function closePanels() { el.shopPanel.hidden = true; el.logPanel.hidden = true; el.questsPanel.hidden = true; }
 el.btnShop.addEventListener('click', () => { audio.ui(); openPanel('shopPanel'); });
 el.btnLog.addEventListener('click', () => { audio.ui(); openPanel('logPanel'); });
 document.querySelectorAll('.close-btn').forEach(b => b.addEventListener('click', () => { audio.ui(); $(`#${b.dataset.close}`).hidden = true; }));
@@ -257,7 +352,7 @@ let introDone = false;
 function press() {
   if (!introDone) return;
   audio.unlock();
-  if (!el.shopPanel.hidden || !el.logPanel.hidden) return; // panels block canvas input
+  if (!el.shopPanel.hidden || !el.logPanel.hidden || !el.questsPanel.hidden) return; // panels block canvas input
   game.fg.press();
 }
 canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); press(); });
@@ -358,6 +453,7 @@ function applyI18n() {
   renderZones();
   if (!el.shopPanel.hidden) renderShop();
   if (!el.logPanel.hidden) renderLog();
+  if (!el.questsPanel.hidden) renderQuests();
   lastHint = ''; // force hint re-render in the new language
 }
 el.localeBtn.addEventListener('click', () => {

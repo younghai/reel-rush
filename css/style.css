@@ -279,3 +279,33 @@ html, body {
 #intro .big-btn { width: 260px; margin-top: 10px; font-size: 20px; }
 #intro.hide { animation: introOut .45s forwards; }
 @keyframes introOut { to { opacity: 0; visibility: hidden; } }
+
+/* ---------- quests ---------- */
+.quest-row {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(9,25,38,.6); border: 1px solid var(--line);
+  border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+}
+.quest-row.done { border-color: rgba(89,217,126,.5); }
+.quest-icon { font-size: 26px; width: 40px; text-align: center; }
+.quest-info { flex: 1; }
+.quest-name { color: var(--text); font-weight: 800; font-size: 15px; }
+.quest-bar { height: 8px; border-radius: 4px; background: #0a2233; border: 1px solid var(--line); margin-top: 7px; overflow: hidden; }
+.quest-bar > div { height: 100%; background: linear-gradient(90deg, #2a8fd8, #4dd8e8); transition: width .3s ease; }
+.quest-row.done .quest-bar > div { background: var(--green); }
+.quest-count { color: var(--dim); font-size: 12.5px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.claim-btn {
+  background: linear-gradient(180deg, #ffd54a, #e8a91f); color: #4a3200; border: none; border-radius: 10px;
+  font-weight: 900; padding: 10px 16px; cursor: pointer; min-width: 92px;
+  box-shadow: 0 4px 12px rgba(232,169,31,.35);
+}
+.claim-btn:disabled { background: #23404f; color: #5d7f93; box-shadow: none; }
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.ach-card {
+  background: rgba(9,25,38,.6); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px; display: flex; gap: 10px; align-items: flex-start; opacity: .55;
+}
+.ach-card.unlocked { opacity: 1; border-color: rgba(255,213,74,.5); }
+.ach-card .ic { font-size: 22px; }
+.ach-card b { display: block; font-size: 13.5px; }
+.ach-card span { font-size: 12px; color: var(--dim); }

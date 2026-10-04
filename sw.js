@@ -16,6 +16,7 @@ const SHELL = [
   'js/config.js',
   'js/fishing.js',
   'js/scenes.js',
+    'js/scenes/world.js', 'js/scenes/hud.js', 'js/scenes/fishdraw.js',
   'js/juice.js',
   'js/economy.js',
   'js/i18n.js',

@@ -6,6 +6,7 @@
   "description": "REEL RUSH — arcade fishing game (zero-dependency browser game)",
   "scripts": {
     "start": "node serve.js",
-    "test": "node test/smoke.mjs"
+    "test": "node test/smoke.mjs",
+    "ci": "for f in js/*.js js/data/*.js sw.js serve.js; do node --check \"$f\" || exit 1; done && node test/smoke.mjs"
   }
 }
