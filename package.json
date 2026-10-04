@@ -1,0 +1,11 @@
+{
+  "name": "reel-rush",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "REEL RUSH — arcade fishing game (zero-dependency browser game)",
+  "scripts": {
+    "start": "node serve.js",
+    "test": "node test/smoke.mjs"
+  }
+}

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>REEL RUSH — Monster Fishing</title>
+<link rel="stylesheet" href="css/style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#04121c" />
+  <link rel="icon" href="pwa/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="pwa/icon-192.png" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎣</text></svg>" />
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game" width="1280" height="720"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div id="hud-tl">
+        <div class="coin-pill"><span class="coin-icon">🪙</span><span id="coinNum">0</span></div>
+        <div class="stat-pill" id="comboPill" hidden><span id="comboNum">x1</span><span class="dim">COMBO</span></div>
+      </div>
+      <div id="hud-tr">
+        <div class="icon-btn" id="timeIcon" data-i18n-title="ui.titleTime" title="시간대">☀️</div>
+        <div class="icon-btn" id="zoneIcon" data-i18n-title="ui.titleZone" title="어장">📍<span id="zoneName">부둣가</span></div>
+        <div class="icon-btn" id="musicBtn" title="Music / 음악">🎵</div>
+        <div class="icon-btn" id="localeBtn" title="Language / 언어">🌐 <span id="localeLabel">KO</span></div>
+        <div class="icon-btn" id="muteBtn" data-i18n-title="ui.titleMute" title="소리">🔊</div>
+      </div>
+      <div id="hud-bl">
+        <div id="zoneChips"></div>
+      </div>
+      <div id="hud-br">
+        <button class="pill-btn" id="btnLog">📖 <span data-i18n="ui.tabLog">도감</span></button>
+        <button class="pill-btn" id="btnShop">🛒 <span data-i18n="ui.tabShop">상점</span> <span id="coolerBadge" hidden>0</span></button>
+      </div>
+      <div id="hint" class="hint"></div>
+    </div>
+
+    <!-- Shop -->
+    <div class="panel" id="shopPanel" hidden>
+      <div class="panel-head"><h2>🛒 <span data-i18n="ui.panelShop">낚시 상점</span></h2><button class="close-btn" data-close="shopPanel">✕</button></div>
+      <div class="panel-body">
+        <div class="shop-tabs">
+          <button class="tab active" data-tab="upgrades" data-i18n="ui.tabUpgrades">업그레이드</button>
+          <button class="tab" data-tab="cooler"><span data-i18n="ui.tabCooler">어획물</span> <span id="coolerCount" class="mini-badge">0</span></button>
+        </div>
+        <div id="tab-upgrades" class="tab-body"></div>
+        <div id="tab-cooler" class="tab-body" hidden>
+          <div id="coolerList" class="cooler-list"></div>
+          <button class="big-btn" id="sellAllBtn">전체 판매하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collection log -->
+    <div class="panel" id="logPanel" hidden>
+      <div class="panel-head"><h2>📖 <span data-i18n="ui.panelLog">어족도감</span></h2><button class="close-btn" data-close="logPanel">✕</button></div>
+      <div class="panel-body">
+        <div id="logProgress" class="log-progress"></div>
+        <div id="logGrid" class="log-grid"></div>
+      </div>
+    </div>
+
+    <!-- Toasts -->
+    <div id="toasts"></div>
+
+    <!-- Intro -->
+    <div id="intro">
+      <h1>REEL RUSH</h1>
+      <p class="sub">🎣 <span data-i18n="intro.title">몬스터 피싱 아케이드</span></p>
+      <p class="howto"><span data-i18n="intro.howto1">클릭으로 캐스트 → "!"가 뜨면 클릭으로 후킹 →</span><br/><span data-i18n="intro.howto2">긴장 게이지를 초록 밴드에 유지하며 릴링!</span></p>
+      <button id="startBtn" class="big-btn" data-i18n="intro.start">출항하기</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

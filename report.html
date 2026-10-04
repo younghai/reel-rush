@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>REEL RUSH — 게임 소개 리포트</title>
+<style>
+  :root {
+    --deep: #04121c; --panel: #0e2436; --panel2: #14324a; --line: #27506e;
+    --text: #eaf6ff; --dim: #8fb4cc; --gold: #ffd54a; --gold2: #e8a91f;
+    --blue: #4db8ff; --green: #59d97e; --red: #ff5d5d; --purple: #b06bff; --pink: #ff5d9e; --orange: #ff9c40;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background:
+      radial-gradient(1200px 500px at 80% -100px, rgba(30, 90, 140, .35), transparent),
+      linear-gradient(180deg, #061a29 0%, var(--deep) 40%, #03101a 100%);
+    color: var(--text);
+    font-family: "SF Pro KR", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px 90px; }
+
+  /* hero */
+  header {
+    text-align: center; padding: 84px 20px 60px; position: relative; overflow: hidden;
+    border-bottom: 1px solid rgba(80, 150, 200, .18);
+  }
+  header::before {
+    content: ""; position: absolute; inset: 0;
+    background: repeating-linear-gradient(180deg, transparent 0 46px, rgba(120, 190, 240, .045) 46px 48px);
+    animation: drift 14s linear infinite;
+  }
+  @keyframes drift { to { background-position: 0 48px; } }
+  h1 {
+    font-size: clamp(44px, 8vw, 84px); font-weight: 900; letter-spacing: .01em;
+    background: linear-gradient(180deg, #ffe98a, #ffb02e 55%, #ff7b2e);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 8px 40px rgba(255, 150, 40, .3));
+    position: relative;
+  }
+  .tagline { color: var(--text); font-size: clamp(16px, 2.4vw, 21px); font-weight: 700; margin-top: 6px; position: relative; }
+  .tagline .sub { color: var(--dim); font-weight: 500; display: block; margin-top: 6px; font-size: 15px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; position: relative; }
+  .stat {
+    background: rgba(14, 36, 54, .85); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 22px; text-align: center; min-width: 108px;
+  }
+  .stat b { display: block; font-size: 24px; color: var(--gold); }
+  .stat span { font-size: 12.5px; color: var(--dim); font-weight: 700; letter-spacing: .04em; }
+
+  /* sections */
+  section { margin-top: 72px; }
+  h2 {
+    font-size: 27px; font-weight: 900; margin-bottom: 6px;
+    padding-left: 14px; border-left: 5px solid var(--gold);
+  }
+  h2 .en { color: var(--dim); font-size: 13px; font-weight: 700; letter-spacing: .12em; margin-left: 10px; }
+  .lead { color: var(--dim); margin: 10px 0 22px; font-size: 15.5px; }
+  h3 { font-size: 18px; margin: 26px 0 10px; color: var(--blue); }
+  p { margin-bottom: 12px; }
+  b, strong { color: #fff; }
+  .gold { color: var(--gold); } .green { color: var(--green); } .blue { color: var(--blue); }
+  .red { color: var(--red); } .purple { color: var(--purple); } .orange { color: var(--orange); } .pink { color: var(--pink); }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .card {
+    background: linear-gradient(180deg, var(--panel2), var(--panel));
+    border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--blue); }
+  .card .ic { font-size: 28px; }
+  .card h4 { font-size: 16.5px; margin: 8px 0 6px; }
+  .card p { font-size: 13.8px; color: var(--dim); margin: 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 14px 0; }
+  th, td { border: 1px solid var(--line); padding: 10px 14px; text-align: left; }
+  th { background: rgba(20, 50, 74, .8); color: var(--gold); font-weight: 800; white-space: nowrap; }
+  td { background: rgba(10, 26, 40, .55); }
+  td.k { color: var(--dim); white-space: nowrap; }
+
+  .loop {
+    display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; justify-content: center; margin: 18px 0 8px;
+  }
+  .loop .step {
+    background: linear-gradient(180deg, #1d4a6b, #12314a); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 16px; text-align: center; flex: 1; min-width: 118px;
+  }
+  .loop .step b { display: block; font-size: 15px; }
+  .loop .step span { font-size: 12px; color: var(--dim); }
+  .loop .arrow { align-self: center; color: var(--gold); font-size: 20px; font-weight: 900; }
+
+  pre {
+    background: #06141f; border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px; overflow-x: auto; font-size: 13px; line-height: 1.55;
+    font-family: "SF Mono", Menlo, Consolas, monospace; color: #bfe0f5;
+  }
+  pre .c { color: #5d8aa8; }
+  code.inline {
+    background: rgba(77, 184, 255, .12); border: 1px solid rgba(77, 184, 255, .25);
+    border-radius: 6px; padding: 1px 7px; font-size: 13px; color: #bfe0f5;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .shots figure { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--panel); }
+  .shots img { width: 100%; display: block; }
+  .shots figcaption { padding: 10px 14px; font-size: 13px; color: var(--dim); }
+  .shots figcaption b { color: var(--text); }
+
+  .callout {
+    border: 1px solid rgba(89, 217, 126, .4); background: rgba(89, 217, 126, .07);
+    border-radius: 14px; padding: 16px 20px; margin: 16px 0; font-size: 14.5px;
+  }
+  .callout.warn { border-color: rgba(255, 156, 64, .4); background: rgba(255, 156, 64, .07); }
+  .rarity { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+  .rarity span {
+    padding: 6px 16px; border-radius: 999px; font-weight: 900; font-size: 13px;
+    border: 1px solid; letter-spacing: .06em;
+  }
+  footer { margin-top: 90px; padding-top: 30px; border-top: 1px solid rgba(80,150,200,.18); text-align: center; color: var(--dim); font-size: 13.5px; }
+  footer .big { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 8px; }
+  nav.toc {
+    position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);
+    background: rgba(4, 18, 28, .85); border-bottom: 1px solid rgba(80,150,200,.15);
+    display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 12px 28px; font-size: 13.5px; font-weight: 700;
+  }
+  nav.toc a { color: var(--dim); text-decoration: none; }
+  nav.toc a:hover { color: var(--gold); }
+  @media (max-width: 640px) { .loop { flex-direction: column; } .loop .arrow { transform: rotate(90deg); } }
+</style>
+</head>
+<body>
+
+<nav class="toc">
+  <a href="#intent">개발 의도</a><a href="#concept">컨셉·재미</a><a href="#loop">코어 루프</a>
+  <a href="#controls">조작법</a><a href="#features">자랑 요소</a><a href="#juice">타격감</a>
+  <a href="#content">콘텐츠·경제</a><a href="#tech">Tech Spec</a><a href="#quality">품질 검증</a>
+  <a href="#gallery">갤러리</a><a href="#roadmap">로드맵</a>
+</nav>
+
+<header>
+  <h1>REEL RUSH</h1>
+  <div class="tagline">🎣 몬스터 피싱 아케이드
+    <span class="sub">Tidewater에서 영감을 받아, 스팀 히트작들의 타격감과 수집·성장 루프를 브라우저 하나로 즐기게 만든 게임</span>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>35</b><span>어종 (보스 2종)</span></div>
+    <div class="stat"><b>5</b><span>어장 × 낮/밤</span></div>
+    <div class="stat"><b>6</b><span>레어도 단계</span></div>
+    <div class="stat"><b>16</b><span>합성 사운드</span></div>
+    <div class="stat"><b>0</b><span>외부 의존성</span></div>
+    <div class="stat"><b>50</b><span>자동 테스트</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ═══════════ 개발 의도 ═══════════ -->
+  <section id="intent">
+    <h2>개발 의도<span class="en">WHY THIS GAME</span></h2>
+    <p class="lead">"낚시 게임인데 왜 시간 가는 줄 모르지?" — 그 답을 오픈소스 <b>Tidewater</b>와 스팀 최고작들에서 뽑아내 하나의 아케이드로 압축한 것이 이 게임의 출발점입니다.</p>
+
+    <h3>시장 분석 → 설계 반영</h3>
+    <table>
+      <tr><th>원작</th><th>성과</th><th>가져온 것</th></tr>
+      <tr><td><b>DREDGE</b></td><td>100만+ 판매</td><td>바다의 긴장감 — 심해의 생체광, 밤 전용 희귀어종, 가끔 지나가는 <span class="purple">그것</span></td></tr>
+      <tr><td><b>Dave the Diver</b></td><td>400만+ 판매</td><td>낮/밤 주기, 포획 순간의 <span class="gold">타격감 연출</span>(히트스톱·플래시)</td></tr>
+      <tr><td><b>WEBFISHING</b></td><td>~150만 판매 · $5.3–6.7M</td><td><span class="pink">레어 카드 리빌</span> 도파민, 콤보, 가벼운 진입 장벽</td></tr>
+      <tr><td><b>Stardew Valley</b></td><td>3,000만+ 판매</td><td>낚시를 '게임'으로 만드는 <span class="blue">스킬 미니게임</span>(긴장 밴드 파이팅)</td></tr>
+      <tr><td><b>Tidewater</b> (참고 OSS)</td><td>—</td><td>tension-band 파이팅 코어, 존×시간대 어종표, 판매→업그레이드 스파이럴</td></tr>
+    </table>
+
+    <div class="callout">
+      <b>목표 지표</b> — 10만 다운로드 / 월 $100k 매출 잠재력. 이를 위해 첫 <b>30초 안에 첫 포획 리빌</b>을 보여주는 즉각적 재미, 세션 목표 3중 구조(도감 완주·보스 2종·밤 전용 레어), F2P(배속·스킨·가챠)와 프리미엄($9.99) 양쪽으로 확장 가능한 구조를 설계에 박아 두었습니다. 상세는 GDD(<code class="inline">.omo/plans/reel-rush-gdd.md</code>) 참고.
+    </div>
+  </section>
+
+  <!-- ═══════════ 컨셉 ═══════════ -->
+  <section id="concept">
+    <h2>컨셉과 핵심 재미<span class="en">CORE CONCEPT</span></h2>
+    <p class="lead">한 문장으로: <b>"낚싯줄 그 한 가닥의 긴장을 게임으로."</b> 캐스트부터 리빌까지 20~40초 — 짧지만 매 순간 손이 멈추지 않는 사이클입니다.</p>
+    <div class="card-grid">
+      <div class="card"><div class="ic">⚡</div><h4>즉각적 타격감</h4><p>포획 순간 히트스톱·화면 흔들림·슬로모션·파티클이 레어도에 비례해 터진다. 첫 포획까지 30초.</p></div>
+      <div class="card"><div class="ic">🎯</div><h4>스킬 미니게임</h4><p>긴장 게이지를 초록 밴드에 유지하는 파이팅. 어종마다 다른 저항 패턴과 스타미나가 손맛을 바꾼다.</p></div>
+      <div class="card"><div class="ic">📖</div><h4>수집 욕구</h4><p>35종 도감, 미포획은 실루엣만. 신규 종 등록마다 판매 보너스가 영구 상승하는 완주 보상.</p></div>
+      <div class="card"><div class="ic">👑</div><h4>보스 &amp; 전설</h4><p>산호 거신, 심연의 리바이어던 — 2페이즈 격노 메커니즘과 전용 리빌 연출.</p></div>
+      <div class="card"><div class="ic">🌙</div><h4>낮과 밤, 리스크</h4><p>밤에는 전용 어종이 올라오고 파이팅이 어려워진다. 심해 어장의 어둠 속에는 <span class="purple">다른 무언가</span>가 지나간다.</p></div>
+      <div class="card"><div class="ic">🪙</div><h4>성장 스파이럴</h4><p>판매 → 4계열 업그레이드 → 더 깊은 어장 개방. "한 존 클리어 ≈ 다음 존 진입" 리듬의 밸런스 곡선.</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 코어 루프 ═══════════ -->
+  <section id="loop">
+    <h2>코어 루프<span class="en">CORE LOOP · 20–40s</span></h2>
+    <div class="loop">
+      <div class="step"><b>CAST</b><span>파워 게이지<br>깊을수록 희귀 ↑</span></div><div class="arrow">→</div>
+      <div class="step"><b>WAIT</b><span>입질 대기<br>미끼로 단축</span></div><div class="arrow">→</div>
+      <div class="step"><b>STRIKE</b><span>"!" 0.3~0.6초<br>PERFECT x1.5</span></div><div class="arrow">→</div>
+      <div class="step"><b>FIGHT</b><span>긴장 밴드 유지<br>패턴·스태미나</span></div><div class="arrow">→</div>
+      <div class="step"><b>REVEAL</b><span>히트스톱+카드<br>콤보·도감</span></div><div class="arrow">→</div>
+      <div class="step"><b>SELL/UP</b><span>판매·강화<br>어장 개방</span></div>
+    </div>
+    <p style="font-size:14px; color:var(--dim)">파이팅에서 지면 콤보가 끊기고, 이기면 다음 캐스트가 더 강해진다 — 한 사이클이 다음 사이클의 이유가 되는 구조.</p>
+  </section>
+
+  <!-- ═══════════ 조작법 ═══════════ -->
+  <section id="controls">
+    <h2>조작법<span class="en">CONTROLS</span></h2>
+    <table>
+      <tr><th>상황</th><th>입력</th><th>결과</th></tr>
+      <tr><td class="k">캐스트</td><td><b>클릭</b> 또는 <b>Space</b></td><td>파워 게이지 시작 → 한 번 더 클릭으로 파워 확정. 멀수록 깊은 수심(희귀어종 ↑)</td></tr>
+      <tr><td class="k">입질 대기</td><td>— (클릭 시 회수)</td><td>bobber가 떠 있고 <span class="gold">"!"</span> 텔레그래프 대기</td></tr>
+      <tr><td class="k">후킹</td><td><b>"!" 순간 클릭</b></td><td>창 초반 42%면 <span class="gold">PERFECT</span>(진행 +15% 시드, 가치 x1.5), 늦으면 일반 후킹, 놓치면 실패</td></tr>
+      <tr><td class="k">파이팅</td><td><b>홀드</b> = 릴링 / <b>해제</b> = 휴식</td><td>긴장 게이지를 <span class="green">초록 밴드(25~80)</span>에 유지해 진행바 충전. <span class="red">빨강 지속 1.25초+</span>면 줄 파손</td></tr>
+      <tr><td class="k">리빌 확인</td><td>클릭 (또는 2.6초 대기)</td><td>레어도 카드 플립 — 콤보·PERFECT 배지 표시</td></tr>
+      <tr><td class="k">상점/도감</td><td>버튼 클릭 · <b>ESC</b> 닫기</td><td>업그레이드 구매, 어획물 일괄 판매, 도감 열람</td></tr>
+      <tr><td class="k">어장 이동</td><td>좌하단 칩 클릭</td><td>코인으로 새 어장 개방 → 즉시 이동</td></tr>
+    </table>
+    <p style="font-size:13.5px; color:var(--dim)">마우스만으로 전 기능 조작 가능(키보드는 보조). 저장은 자동(localStorage) — 탭을 닫아도 이어서 가능.</p>
+  </section>
+
+  <!-- ═══════════ 자랑 요소 ═══════════ -->
+  <section id="features">
+    <h2>자랑할 만한 게임 요소<span class="en">SHOWCASE</span></h2>
+
+    <h3>① 레어도 리빌 — 6단계 도파민 사다리</h3>
+    <div class="rarity">
+      <span style="color:#cfe3ee; border-color:#cfe3ee55">★ 흔함</span>
+      <span style="color:#59d97e; border-color:#59d97e66">★★ 일반</span>
+      <span style="color:#4db8ff; border-color:#4db8ff66">★★★ 희귀</span>
+      <span style="color:#b06bff; border-color:#b06bff66">★★★★ 에픽</span>
+      <span style="color:#ffb02e; border-color:#ffb02e66">★★★★★ 전설</span>
+      <span style="color:#ff5d9e; border-color:#ff5d9e66">★★★★★★ 신화</span>
+    </div>
+    <p>흔함은 가볍게, 신화는 화면 전체를 쓴다 — 히트스톱이 90ms → 450ms로 길어지고, rare 이상부터 슬로모션·화면 플래시·컨페티·전용 팡파레가 겹칩니다.</p>
+
+    <h3>② 어종별 파이팅 AI — 손맛이 다른 35종</h3>
+    <table>
+      <tr><th>패턴</th><th>행동</th><th>대표 어종</th></tr>
+      <tr><td class="k"><b>runner</b> 달리기</td><td>긴 원거리 질주 — 릴이 풀린다</td><td>참다랑어, 백상아리, 황새치</td></tr>
+      <tr><td class="k"><b>diver</b> 잠수</td><td>깊이 파고든다 — 긴장 급등 구간</td><td>뱀장어, 아귀, 붕장어</td></tr>
+      <tr><td class="k"><b>thrasher</b> 난폭</td><td>짧고 거친 난타 — 긴장 유지가 어려움</td><td>곰치, 갑오징어, 뱀파이어오징어</td></tr>
+      <tr><td class="k"><b>darting</b> 반짝</td><td>불규칙한 순간 가속</td><td>정어리, 멸치, 날치</td></tr>
+      <tr><td class="k"><b>steady</b> 근성</td><td>꾸준한 중량급 저항 — 보스 포함</td><td>우럭, 혹돔, 산호 거신</td></tr>
+    </table>
+    <p>스태미나가 바닥나면 저항이 무너지고(×1.9 포획 가속), <span class="pink">보스는 스타미나 절반에서 2페이즈 격노</span>(+15% 힘)로 패턴을 바꿉니다.</p>
+
+    <h3>③ 심해의 비밀</h3>
+    <p>심해 어장(🪙40,000)에는 생체광 플랑크톤이 반짝이고, 확률적으로 <span class="purple">화면을 가로지르는 거대 실루엣</span>이 지나갑니다. 밤의 심연에는 신화급 <b>Abyssal Leviathan(심연의 리바이어던)</b>이 서식 — DREDGE식 공포의 맛.</p>
+
+    <h3>④ 낮/밤 150초+90초 사이클</h3>
+    <p>하늘·바다 팔레트가 부드럽게 전환되고 밤에는 별·달·부두 랜턴이 켜집니다. 밤 전용 어종(뱀장어, 갑오징어, 랜턴피시, 심연의 리바이어던…)이 어종표에 추가되며, 같은 어장을 시간대만으로 다시 탐험할 이유를 만듭니다.</p>
+
+    <h3>⑤ 도감 완주 보상</h3>
+    <p>미포획 어종은 실루엣과 "???". 포획할 때마다 도감 완성도가 오르고 <b>신규 종당 +2%(최대 +30%) 판매 보너스</b>가 영구 적용 — 수집이 곧 경제입니다.</p>
+  </section>
+
+  <!-- ═══════════ 타격감 ═══════════ -->
+  <section id="juice">
+    <h2>타격감 시스템<span class="en">JUICE — THE HEART</span></h2>
+    <p class="lead">"이벤트가 생기면 화면 전체가 반응한다" — 포획 1회에 아래 시스템이 레이어로 동시 발화합니다.</p>
+    <div class="card-grid">
+      <div class="card"><div class="ic">🥊</div><h4>히트스톱 90–450ms</h4><p>레어도가 높을수록 세상이 멈춘다. PERFECT 후킹에도 90ms 미니 스톱.</p></div>
+      <div class="card"><div class="ic">📳</div><h4>스크린 셰이크</h4><p>입질·후킹·어종 당김·포획·스냅 — 강도는 어종 체급×레어도 비례, 지수 감쇠.</p></div>
+      <div class="card"><div class="ic">🕐</div><h4>슬로모션</h4><p>rare 이상 포획 시 0.18–0.35배. 전설+는 화면 플래시와 함께.</p></div>
+      <div class="card"><div class="ic">✨</div><h4>파티클 &amp; 컨페티</h4><p>착수 스플래시, 후킹 스파크, 포획 버스트, 에픽+ 컨페티, 긴장 경고 스파크. 풀 캡 420으로 프레임 방어.</p></div>
+      <div class="card"><div class="ic">💬</div><h4>플로팅 텍스트</h4><p>"PERFECT!", "+1,240", "COMBO x5", "NEW SPECIES!" — 바운스 이징.</p></div>
+      <div class="card"><div class="ic">🌈</div><h4>크로매틱 펄스</h4><p>큰 타격 시 화면 가장자리에 블루/핑크 색수차 파동.</p></div>
+    </div>
+    <div class="callout warn" style="margin-top:18px">
+      <b>사운드도 전부 실시간 합성</b> — 에셋 파일 0개. WebAudio 오실레이터+화이트노이즈+바이쿼드 필터로 캐스트 휘슬, 착수 스플래시, 입질 "둥", 릴 래칫(속도 비례), 줄 끊어짐, 레어도별 6단 팡파레(신화는 서브드롭+2옥타브 아르페지오+스파클 캐스케이드)까지 16종을 만듭니다.
+    </div>
+  </section>
+
+  <!-- ═══════════ 콘텐츠·경제 ═══════════ -->
+  <section id="content">
+    <h2>콘텐츠와 경제<span class="en">CONTENT &amp; ECONOMY</span></h2>
+    <h3>5개 어장 — 팔레트도, 어종표도, 위험도도 다르다</h3>
+    <table>
+      <tr><th>어장</th><th>개방 비용</th><th>특징</th><th>대표 어종</th></tr>
+      <tr><td class="k">부둣가</td><td>무료</td><td>튜토리얼 존, 온화한 저항</td><td>정어리, 우럭, 밤의 뱀장어</td></tr>
+      <tr><td class="k">얕은만</td><td>800</td><td>도입 희귀(갑오징어·붕장어)</td><td>도미, 붉은돔, 밤의 문어류</td></tr>
+      <tr><td class="k">산호초</td><td>3,500</td><td>팬시 어종 + <span class="pink">보스: 산호 거신</span></td><td>흰동가리, 혹돔, 라이온피시</td></tr>
+      <tr><td class="k">대양</td><td>12,000</td><td>러너 어종 천국 — <span class="orange">전설 2종</span></td><td>백상아리, 참다랑어, 돛새치</td></tr>
+      <tr><td class="k">심해</td><td>40,000</td><td>생체광+가시거리 제한 — <span class="pink">보스: 심연의 리바이어던</span></td><td>아귀, 고블린상어, 대왕오징어급</td></tr>
+    </table>
+    <h3>업그레이드 4계열 × 4단계</h3>
+    <table>
+      <tr><th>계열</th><th>효과</th><th>총 투자</th></tr>
+      <tr><td class="k">🎣 낚싯대</td><td>후킹 창 +10~40%, 파이팅 진행 속도 +22~88%</td><td>11,750</td></tr>
+      <tr><td class="k">🧵 낚싯줄</td><td>위험 구간 허용 시간 +0.45~1.8초</td><td>8,920</td></tr>
+      <tr><td class="k">🌀 릴</td><td>릴링 힘 +25~100% (스태미나 소모 ↑)</td><td>13,050</td></tr>
+      <tr><td class="k">🪱 미끼</td><td>입질 대기 −18~72%, 희귀 가중치 +15~60%</td><td>15,350</td></tr>
+    </table>
+    <p style="font-size:14px; color:var(--dim)">판매가 = 기본값 × 크기 비율 × 레어도 × 콤보(최대 x2.5) × PERFECT(x1.5) × 도감 보너스(최대 +30%). 콤보는 14초 안에 연속 포획 시 +12%/스택.</p>
+  </section>
+
+  <!-- ═══════════ TECH SPEC ═══════════ -->
+  <section id="tech">
+    <h2>Tech Spec<span class="en">ENGINEERING</span></h2>
+    <h3>한 줄 요약</h3>
+    <p><b>프레임워크·빌드도구·외부 의존성 0개</b> — 바닐라 ES 모듈 + Canvas 2D + WebAudio. 정적 파일 서빙만으로 배포되고, 어떤 정적 호스팅(GitHub Pages, S3, Netlify)에도 그대로 올라갑니다.</p>
+
+    <h3>구성</h3>
+<pre>
+<span class="c">index.html · css/style.css · package.json · serve.js (no-cache 정적 서버)</span>
+js/main.js      부트, 게임 루프(rAF + 굶주림 워치독), 입력, HUD/상점/도감 DOM
+js/config.js    밸런스 상수 — 레어도·업그레이드·파이팅·캐스트 전부 데이터화
+js/fishing.js   캐스트→입질→후킹→파이팅 상태머신 + 어종 선택 가중치
+js/scenes.js    하늘/낮밤/바다/부둣가/파이팅 UI/리빌 카드 렌더러
+js/juice.js     타격감 엔진 — 셰이크·히트스톱·슬로모·파티클·플로팅 텍스트
+js/economy.js   코인·업그레이드·쿨러·도감·세이브 (순수 로직, 노드 테스트 가능)
+js/data/fishes.js   어종 DB 35종 (19필드 스키마)
+js/audio.js     WebAudio 실시간 합성 SFX 엔진 (16큐)
+test/smoke.mjs  헤드리스 로직 테스트 50 assertions
+serve.js        no-cache 정적 서버 (개발 편의 + 보안 헤더)
+</pre>
+
+    <h3>핵심 엔지니어링 결정</h3>
+    <table>
+      <tr><th>영역</th><th>결정</th><th>이유</th></tr>
+      <tr><td class="k">렌더링</td><td>Canvas 2D, 1280×720 논리 해상도 + DPR 스케일</td><td>WebGPU 대비 압도적 호환성, 아트 스타일(플랫+파티클)에 충분</td></tr>
+      <tr><td class="k">게임 루프</td><td>rAF + <b>굶주림 워치독</b>(30ms 타이머, 300ms 정체 시 강제 프레임) + <code class="inline">__RR.tick()</code> 수동 스텝</td><td>가려진 창/스로틀링 환경에서도 시뮬레이션 일관성 — QA·화면녹화 안전</td></tr>
+      <tr><td class="k">오디오</td><td>지연 생성 AudioContext, 공유 노이즈 버퍼, 보이스 자가 정리(onended)</td><td>에셋 0개, 제스처 전 호출 안전(no-op), 보이스 폭풍 방지(릴 28ms 리미터)</td></tr>
+      <tr><td class="k">세이브</td><td>localStorage + <b>로드 시 sanitization</b>(코인/레벨/존/로그 전 필드 강제 변환) + calcValue NaN 가드</td><td>변조·버전 드리프트가 게임 수학(NaN)으로 번지는 것을 경계에서 차단</td></tr>
+      <tr><td class="k">테스트</td><td><code class="inline">npm test</code> — 실제 FishingGame/Economy를 구동하는 행위 기반 50 assertions</td><td>풀 루프 시뮬레이션·실패 경로·경제 수학·35종 도달성을 CI 가능하게</td></tr>
+      <tr><td class="k">QA 훅</td><td><code class="inline">window.__RR</code> (forceBite, autoHook, autoFight, tick, state)</td><td>실시간 게임의 결정론적 자동화 — 실제 출하 게임의 표준 관행</td></tr>
+    </table>
+
+    <h3>실측 성능 (브라우저 프로파일)</h3>
+    <table>
+      <tr><th>시나리오</th><th>평균 프레임 비용</th><th>p95</th><th>최악</th></tr>
+      <tr><td class="k">평상시(월드 렌더+시뮬)</td><td>0.036ms</td><td>0.1ms</td><td>4.3ms</td></tr>
+      <tr><td class="k">포획 버스트(파티클 20)</td><td>0.1ms</td><td>0.2ms</td><td>4.3ms</td></tr>
+      <tr><td class="k">스트레스(파티클 420 — 풀 캡)</td><td>0.248ms</td><td>0.3ms</td><td>2.5ms</td></tr>
+    </table>
+    <p style="font-size:13.5px; color:var(--dim)">60fps 예산 16.6ms 대비 평상시 <b class="green">0.2%</b> — 저사양 기기 headroom 충분. 파티클 풀 캡으로 최악 프레임도 상한 보장.</p>
+  </section>
+
+  <!-- ═══════════ 품질 검증 ═══════════ -->
+  <section id="quality">
+    <h2>품질 검증<span class="en">VERIFIED, NOT VIBES</span></h2>
+    <div class="card-grid">
+      <div class="card"><div class="ic">🧪</div><h4>로직 테스트 50/50</h4><p>풀 낚시 루프 시뮬레이션, 실패 경로(미스·이탈·스냅), 경제 수학, 35종 전종 도달성 — 8연속 그린.</p></div>
+      <div class="card"><div class="ic">🖱️</div><h4>GUI 블랙박스 테스트 14/16</h4><p>실제 클릭·드래그·키보드로 전 버튼·패널·플로우 검증. 콘솔 에러 0. (콤보는 도구 지연으로 부분, 스냅은 홀드 상한으로 블록 — 수치 검증 대체)</p></div>
+      <div class="card"><div class="ic">🛡️</div><h4>보안 감사</h4><p>저장 변조 7종 매트릭스: XSS·프로토타입 오염·NaN 전파 모두 차단 확인. 심각 결함 3건(경제 오염·루프 정지·NaN 전파) 발견→수정.</p></div>
+      <div class="card"><div class="ic">⚙️</div><h4>독립 코드 리뷰</h4><p>전 파일 정밀 리뷰 <b>APPROVE</b> — P0~P2 결함 0. 파이팅 수치 손추적(스냅/무한루프 없음), 경제 exploit 없음, 메모리 누수 없음.</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 갤러리 ═══════════ -->
+  <section id="gallery">
+    <h2>갤러리<span class="en">SCREENSHOTS</span></h2>
+    <p class="lead">실제 플레이 중 캡처 (gui-test-screenshots/).</p>
+    <div class="shots">
+      <figure><img src="gui-test-screenshots/t1_after_depart.png" alt="부둣가 낮 풍경" /><figcaption><b>부둣가 · 낮</b> — 캐스트를 기다리는 낚시꾼</figcaption></figure>
+      <figure><img src="gui-test-screenshots/t4_reveal_card.png" alt="포획 리빌 카드" /><figcaption><b>포획 리빌</b> — PERFECT HOOK, 도감 신규 등록</figcaption></figure>
+      <figure><img src="gui-test-screenshots/t8_shop_after_max.png" alt="상점 MAX" /><figcaption><b>낚시 상점</b> — 미끼 Lv.4 MAX 달성</figcaption></figure>
+      <figure><img src="gui-test-screenshots/t11_zone_unlocked.png" alt="어장 개방 컨페티" /><figcaption><b>어장 개방</b> — 새 어장 얕은만</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ═══════════ 로드맵 ═══════════ -->
+  <section id="roadmap">
+    <h2>확장 로드맵<span class="en">NEXT</span></h2>
+    <div class="card-grid">
+      <div class="card"><div class="ic">📦</div><h4>배포</h4><p>정적 호스팅 즉시 배포 가능. PWA 매니페스트로 모바일 홈화면 설치 지원 예정.</p></div>
+      <div class="card"><div class="ic">🗓️</div><h4>리텐션</h4><p>일일 퀘스트, 주간 보스 이벤트, 출석 보너스 — 세션 목표 추가.</p></div>
+      <div class="card"><div class="ic">💰</div><h4>수익화</h4><p>스킨/로드 슬롯/배속 부스터(F2P) 또는 $9.99 프리미엄 — 양쪽 호환 구조.</p></div>
+      <div class="card"><div class="ic">🌎</div><h4>확장</h4><p>Steam(Electron/Tauri 래핑), 리더보드, 추가 어장(난파선·극지방), 시즌 어종.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="big">🎣 REEL RUSH — 줄을 당기는 순간이 게임이다</div>
+    실행: <code class="inline">npm start</code> → http://127.0.0.1:8899 · 테스트: <code class="inline">npm test</code><br/><br/>
+    GDD · 감사 보고서 · GUI 테스트 증거는 <code class="inline">.omo/plans/</code> · <code class="inline">gui-test-screenshots/</code> 에 함께 보관되어 있습니다.
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# 개발/QA 산출물 — 저장소에서 제외
+.omo/
+gui-test-screenshots/
+.codegraph
+*.log
+.DS_Store
+node_modules/

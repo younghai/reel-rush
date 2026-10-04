@@ -1,0 +1,34 @@
+{
+  "name": "REEL RUSH — Monster Fishing",
+  "short_name": "REEL RUSH",
+  "description": "깊은 바다의 괴물을 낚아라! Deep-sea monster fishing arcade game.",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#04121c",
+  "theme_color": "#04121c",
+  "categories": ["games"],
+  "icons": [
+    {
+      "src": "pwa/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "pwa/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "pwa/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
