@@ -7,7 +7,7 @@
  */
 'use strict';
 
-const CACHE = 'reelrush-v1';
+const CACHE = 'reelrush-v2';
 
 const SHELL = [
   'index.html',
