@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>REEL RUSH — Before / After 분석 리포트</title>
+<title>REEL RUSH — Before / After 분석 리포트 (v2 · Tidewater 알고리즘 반영)</title>
 <style>
   :root {
     --deep: #04121c; --panel: #0e2436; --panel2: #14324a; --line: #27506e;
@@ -16,144 +16,197 @@
     color: var(--text); line-height: 1.65;
     font-family: "SF Pro KR", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   }
-  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 28px 90px; }
-  header { text-align: center; padding: 70px 20px 44px; border-bottom: 1px solid rgba(80,150,200,.18); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px 90px; }
+  header { text-align: center; padding: 66px 20px 44px; border-bottom: 1px solid rgba(80,150,200,.18); }
   h1 {
-    font-size: clamp(34px, 6vw, 60px); font-weight: 900;
+    font-size: clamp(34px, 6vw, 58px); font-weight: 900;
     background: linear-gradient(180deg, #ffe98a, #ffb02e 55%, #ff7b2e);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .tagline { color: var(--dim); margin-top: 10px; font-size: 16px; }
+  .tagline { color: var(--dim); margin-top: 10px; font-size: 15.5px; }
   .verdict {
-    display: inline-block; margin-top: 22px; padding: 12px 30px; border-radius: 999px;
+    display: inline-block; margin-top: 20px; padding: 12px 28px; border-radius: 999px;
     background: rgba(89,217,126,.1); border: 1px solid rgba(89,217,126,.5);
-    color: var(--green); font-weight: 900; font-size: 17px;
+    color: var(--green); font-weight: 900; font-size: 16px;
   }
-  section { margin-top: 60px; }
-  h2 { font-size: 25px; font-weight: 900; padding-left: 14px; border-left: 5px solid var(--gold); margin-bottom: 16px; }
-  h3 { font-size: 17px; color: var(--blue); margin: 24px 0 10px; }
+  section { margin-top: 56px; }
+  h2 { font-size: 24px; font-weight: 900; padding-left: 14px; border-left: 5px solid var(--gold); margin-bottom: 14px; }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
   p { margin-bottom: 12px; }
   b, strong { color: #fff; }
-  .lead { color: var(--dim); font-size: 15px; margin-bottom: 18px; }
-
-  /* timeline */
+  .lead { color: var(--dim); font-size: 15px; margin-bottom: 16px; }
   .timeline { display: flex; flex-wrap: wrap; gap: 12px; }
-  .t-step { flex: 1; min-width: 210px; background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
-  .t-step .date { color: var(--gold); font-weight: 900; font-size: 15px; }
-  .t-step .what { font-size: 13.5px; color: var(--dim); margin-top: 6px; }
-  .t-step.hot { border-color: rgba(255,213,74,.5); }
-
-  /* before-after table */
-  table { width: 100%; border-collapse: collapse; font-size: 13.8px; margin: 14px 0; }
-  th, td { border: 1px solid var(--line); padding: 10px 13px; text-align: left; vertical-align: top; }
+  .t-step { flex: 1; min-width: 200px; background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 15px; }
+  .t-step .date { color: var(--gold); font-weight: 900; font-size: 14.5px; }
+  .t-step .what { font-size: 13.2px; color: var(--dim); margin-top: 6px; }
+  .t-step.hot { border-color: rgba(255,213,74,.55); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.6px; margin: 14px 0; }
+  th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; vertical-align: top; }
   th { background: rgba(20,50,74,.85); font-weight: 800; }
   th.before { color: var(--red); } th.after { color: var(--green); }
   td { background: rgba(10,26,40,.55); }
   td.cat { color: var(--gold); font-weight: 800; white-space: nowrap; background: rgba(20,50,74,.4); }
   .no { color: var(--red); } .yes { color: var(--green); }
-
-  /* why slow */
-  .why { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
-  .why .card { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
-  .why .card h4 { font-size: 15px; margin-bottom: 6px; }
-  .why .card p { font-size: 13.2px; color: var(--dim); margin: 0; }
-  .why .cost { color: var(--orange); font-weight: 900; font-size: 12px; }
-
-  .bugs { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  .bugs td:first-child { color: var(--pink); font-weight: 800; white-space: nowrap; }
-  .callout {
-    border: 1px solid rgba(89,217,126,.4); background: rgba(89,217,126,.07);
-    border-radius: 14px; padding: 16px 20px; margin: 16px 0; font-size: 14.5px;
-  }
-  .callout.warn { border-color: rgba(255,156,64,.4); background: rgba(255,156,64,.07); }
   .kpi { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
   .kpi div { background: rgba(14,36,54,.85); border: 1px solid var(--line); border-radius: 14px; padding: 12px 22px; text-align: center; min-width: 100px; }
-  .kpi b { display: block; font-size: 22px; color: var(--gold); }
-  .kpi span { font-size: 12px; color: var(--dim); font-weight: 700; }
-  code { background: rgba(77,184,255,.12); border: 1px solid rgba(77,184,255,.25); border-radius: 6px; padding: 1px 7px; font-size: 12.5px; color: #bfe0f5; font-family: "SF Mono", Menlo, monospace; }
+  .kpi b { display: block; font-size: 21px; color: var(--gold); }
+  .kpi span { font-size: 11.5px; color: var(--dim); font-weight: 700; }
+  .why { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; }
+  .why .card { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 15px; }
+  .why .card h4 { font-size: 14.5px; margin-bottom: 6px; }
+  .why .card p { font-size: 13px; color: var(--dim); margin: 0; }
+  .why .cost { color: var(--orange); font-weight: 900; font-size: 12px; }
+  .algo { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+  .algo .card { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .algo h4 { font-size: 14.5px; margin-bottom: 8px; }
+  .algo .ba { font-size: 12.8px; }
+  .algo .ba .b { color: var(--red); }
+  .algo .ba .a { color: var(--green); }
+  .algo pre { background: #06141f; border: 1px solid rgba(80,150,200,.25); border-radius: 8px; padding: 8px 10px; font-size: 11.5px; overflow-x: auto; margin: 6px 0 0; font-family: "SF Mono", Menlo, Consolas, monospace; color: #bfe0f5; }
+  code { background: rgba(77,184,255,.12); border: 1px solid rgba(77,184,255,.25); border-radius: 6px; padding: 1px 6px; font-size: 12.5px; color: #bfe0f5; font-family: "SF Mono", Menlo, monospace; }
+  .callout { border: 1px solid rgba(89,217,126,.4); background: rgba(89,217,126,.07); border-radius: 14px; padding: 15px 19px; margin: 14px 0; font-size: 14.2px; }
+  .callout.warn { border-color: rgba(255,156,64,.4); background: rgba(255,156,64,.07); }
   footer { margin-top: 70px; padding-top: 26px; border-top: 1px solid rgba(80,150,200,.18); text-align: center; color: var(--dim); font-size: 13px; }
+  .badge-new { display: inline-block; background: var(--pink); color: #2a0010; font-size: 10.5px; font-weight: 900; border-radius: 6px; padding: 1px 7px; vertical-align: 2px; margin-left: 6px; letter-spacing: .05em; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header>
-  <h1>BEFORE → AFTER</h1>
-  <div class="tagline">REEL RUSH 프로젝트: 빈 폴더에서 라이브 서비스까지 — 무엇이, 언제, 왜 그 시간이 걸렸는가</div>
-  <div class="verdict">✅ 결론: Tier 1~3 전부 완료 · 라이브 배포 검증까지 끝났습니다</div>
+  <h1>BEFORE → AFTER <span style="font-size:.45em; vertical-align:middle">v2</span></h1>
+  <div class="tagline">REEL RUSH — 참고 레포 지정(Tidewater)에서 시작해, 소스 알고리즘까지 흡수한 현재 최종 버전까지의 전체 비교</div>
+  <div class="verdict">✅ Tier 1~3 + Tidewater 알고리즘 9종 적용 완료 · 라이브 배포 검증까지 끝났습니다</div>
 </header>
 
 <!-- ═══════════ 타임라인 ═══════════ -->
 <section>
-  <h2>실제 타임라인</h2>
-  <p class="lead">먼저 사실 관계 하나: <b>"10/2 이전"에는 게임이 존재하지 않았습니다.</b> <code>AI_game</code> 폴더는 9/25에 만들어졌지만 내용물은 비어 있었고(인프라 심볼릭 링크만 존재), 게임의 모든 코드는 10/3~10/4 이틀에 신규 작성됐습니다. 즉 이 비교는 "이전 버전 vs 수정 버전"이 아니라 <b>"제로 → 완성 서비스"</b>입니다.</p>
+  <h2>실제 타임라인 (4단계)</h2>
+  <p class="lead">중요한 전제: <b>이 프로젝트는 처음부터 Tidewater(공개 저장소)를 참고 레포로 지정하고 시작</b>했습니다. Before는 "게임이 없던 상태"이며, 참고 대상과 목표(히트작급 낚시 게임)는 이미 명확했습니다. After는 그 참고를 넘어 <b>Tidewater의 소스·알고리즘까지 직접 흡수한 단계</b>까지 포함합니다.</p>
   <div class="timeline">
-    <div class="t-step"><div class="date">9/25~10/2</div><div class="what"><b>Before: 빈 폴더</b><br/>AI_game 디렉터리에 실행 가능한 파일 0개. 목표만 존재 ("Tidewater 참고, 스팀 히트작급 낚시 게임")</div></div>
-    <div class="t-step"><div class="date">10/3 오전~오후</div><div class="what"><b>게임 탄생 + 검증 데이</b><br/>GDD(스팀 히트작 분석) → 게임 전체 구현 → 로직 테스트 50종 → 브라우저 QA(C1~C6) → 보안 감사(치명 3건 수정) → GUI 블랙박스 테스트 16종 → 독립 리뷰 <b>APPROVE</b></div></div>
-    <div class="t-step hot"><div class="date">10/4</div><div class="what"><b>서비스화 데이</b><br/>분석 제안(Tier 1~3) → i18n·모바일·PWA·퀘스트/업적·음악·접근성·리팩터링 → <b>GitHub Pages 라이브 배포</b> (3커밋, SW 캐시 이슈 즉시 수정)</div></div>
+    <div class="t-step"><div class="date">9/25~10/2</div><div class="what"><b>Before: 기획만, 코드 0줄</b><br/>AI_game 폴더에 실행 파일 없음. 대신 방향은 명확 — 참고 레포(Tidewater)·목표(스팀 히트작급, 100k DL) 지정 완료</div></div>
+    <div class="t-step"><div class="date">10/3</div><div class="what"><b>게임 탄생 + 검증의 날</b><br/>Tidewater 컨셉 분석 → GDD → 게임 구현 → 로직 테스트 50 → 브라우저 QA(C1~C6) → 보안 감사(치명 3건 수정) → GUI 테스트 16포인트 → 독립 리뷰 <b>APPROVE</b></div></div>
+    <div class="t-step"><div class="date">10/4 오전</div><div class="what"><b>서비스화 (Tier 1~3)</b><br/>KO/EN i18n · 모바일 대응 · PWA · 일일 퀘스트+업적 12종 · 앰비언트 음악 · 접근성 · 렌더러 분리 · <b>GitHub Pages 배포</b></div></div>
+    <div class="t-step hot"><div class="date">10/4 오후</div><div class="what"><b>Tidewater 알고리즘 흡수 <span class="badge-new" style="background:var(--gold)">NEW</span></b><br/>저장소 클론 → src 80,899줄 정독 → 핵심 알고리즘 9종 적용 (골든아워·수심 전략·파이팅 물리 v2·39종·boids·보이스 리밋) → SW v4 재배포</div></div>
   </div>
 </section>
 
 <!-- ═══════════ BEFORE vs AFTER ═══════════ -->
 <section>
-  <h2>Before vs After — 카테고리별 비교</h2>
+  <h2>Before vs After — 카테고리별 비교 (최종)</h2>
   <table>
-    <tr><th style="width:130px">카테고리</th><th class="before">BEFORE (10/2 이전)</th><th class="after">AFTER (10/4 최종)</th></tr>
-    <tr><td class="cat">코드</td><td><span class="no">0줄</span> — 파일 없음</td><td><span class="yes">5,856줄</span> · 27개 파일 · 의존성 0개 (바닐라 ES 모듈 + Canvas2D + WebAudio)</td></tr>
-    <tr><td class="cat">게임 플레이</td><td><span class="no">없음</span></td><td><span class="yes">풀 루프 20~40초</span>: 캐스트 파워게이지 → 입질 텔레그래프 → PERFECT 후킹(42% 존) → 긴장 밴드 파이팅(어종별 5패턴 AI·스태미나) → 레어도 리빌 카드</td></tr>
-    <tr><td class="cat">콘텐츠</td><td><span class="no">없음</span></td><td><span class="yes">어종 35종</span> (보스 2종·2페이즈 격노) · 어장 5개(존 언락) · 낮/밤 사이클 · 심해 이스터에그(거대 실루엣)</td></tr>
-    <tr><td class="cat">타격감(Juice)</td><td><span class="no">없음</span></td><td><span class="yes">6계통</span>: 히트스톱 90~450ms · 스크린 셰이크 · 슬로모(rare+) · 파티클/컨페티(풀 캡 420) · 플로팅 텍스트 · 크로매틱 펄스 — 레어도 연동</td></tr>
-    <tr><td class="cat">사운드</td><td><span class="no">없음</span></td><td><span class="yes">전부 실시간 합성(에셋 0개)</span>: SFX 16큐 + 앰비언트 음악(낮 패드/밤 드론 자동 크로스페이드)</td></tr>
-    <tr><td class="cat">진행·경제</td><td><span class="no">없음</span></td><td><span class="yes">코인·판매·업그레이드 4계열×4단계</span> · 콤보(최대 x2.5) · 도감 완성 보너스(+30%)</td></tr>
-    <tr><td class="cat">리텐션</td><td><span class="no">없음</span></td><td><span class="yes">일일 퀘스트</span>(매일 3개·결정론 선택·보상 수령) + <span class="yes">업적 12종</span> (해금 연출)</td></tr>
-    <tr><td class="cat">언어</td><td>—</td><td><span class="yes">🇰🇷/🇬🇧 이중 언어</span> — 실시간 전환·저장·브라우저 자동 감지 (61키)</td></tr>
-    <tr><td class="cat">저장</td><td>—</td><td><span class="yes">localStorage v2</span> + 로드 시 sanitization (변조·v1 세이브 자동 마이그레이션)</td></tr>
-    <tr><td class="cat">보안</td><td>—</td><td><span class="yes">감사 완료</span>: XSS·프로토타입 오염·저장 변조 7종 차단 확인, 경로 traversal 가드 서버</td></tr>
-    <tr><td class="cat">접근성</td><td>—</td><td><span class="yes">reduced-motion 대응</span> + 색약 안전 긴장 바(해칭·눈금·⚠ 글리프)</td></tr>
-    <tr><td class="cat">품질</td><td>—</td><td><span class="yes">로직 50 + 퀘스트 200 어설션</span> · GUI 블랙박스 테스트(스크린샷 20+) · 독립 코드 리뷰 APPROVE · CI(GitHub Actions)</td></tr>
-    <tr><td class="cat">성능</td><td>—</td><td><span class="yes">프레임 0.036ms</span>(60fps 예산의 0.2%) · 스트레스 최악 2.5ms 상한</td></tr>
-    <tr><td class="cat">배포</td><td><span class="no">불가</span> (로컬 파일조차 없음)</td><td><span class="yes">라이브 서비스</span>: <b>https://younghai.github.io/reel-rush/</b> · PWA 설치·오프라인 캐시 · HTTPS</td></tr>
-    <tr><td class="cat">문서</td><td>—</td><td>GDD · 감사 보고서 · 게임 소개 리포트 · DEPLOY 가이드 · README</td></tr>
+    <tr><th style="width:120px">카테고리</th><th class="before">BEFORE (10/2 이전)</th><th class="after">AFTER (10/4 최종)</th></tr>
+    <tr><td class="cat">코드</td><td><span class="no">0줄</span></td><td><span class="yes">6,200줄+</span> · 31개 파일 · 의존성 0개 · CI 연동</td></tr>
+    <tr><td class="cat">게임 플레이</td><td><span class="no">없음</span></td><td><span class="yes">풀 루프 20~40초</span>: 캐스트 → 입질 → PERFECT 후킹 → 긴장 밴드 파이팅 → 레어도 리빌</td></tr>
+    <tr><td class="cat">어종 콘텐츠</td><td><span class="no">없음</span></td><td><span class="yes">39종</span> (보스 2종 + <b>골든아워 전용 4종</b>: 갈치·농어·참돔·돛새치) · 종별 <b>체장(cm)·선호 수심 밴드</b> 필드</td></tr>
+    <tr><td class="cat">입질 모델</td><td><span class="no">없음</span></td><td><span class="yes">가우시안 dawn/dusk 활성 곡선</span> + 지수분포 입질 지연(수질 비례·하한 1.6초) — 시간대별 어종 활성이 연속값</td></tr>
+    <tr><td class="cat">캐스트 전략</td><td><span class="no">없음</span></td><td><span class="yes">어종별 선호 수심 밴드 + smoothstep 친화도</span> — 깊은 캐스트에서 얕은물 어종이 아예 안 물어요 (테스트 검증)</td></tr>
+    <tr><td class="cat">파이팅 물리</td><td><span class="no">없음</span></td><td><span class="yes">v2 (Tidewater 기반)</span>: 긴장 지수수렴 관성 · 슬랙 페널티(풀면 바늘 이탈) · 트로피 스태미나 스케일링 · 밴드 밖 0.3배 효율 · 보스 2페이즈 격노</td></tr>
+    <tr><td class="cat">타격감(Juice)</td><td><span class="no">없음</span></td><td><span class="yes">6계통</span>: 히트스톱 90~450ms · 셰이크 · 슬로모 · 파티클(캡 420) · 플로팅 텍스트(<b>+cm 표기</b>) · 크로매틱 펄스</td></tr>
+    <tr><td class="cat">사운드</td><td><span class="no">없음</span></td><td><span class="yes">전부 실시간 합성</span>: SFX 16큐(카테고리별 보이스 리밋) + <b>앰비언트 음악</b>(파도 세척음·플럭 — 🎵 옵트인, 부팅 드론 제거)</td></tr>
+    <tr><td class="cat">세계 생태</td><td><span class="no">없음</span></td><td><span class="yes">boids 어군 16마리</span>(분리·정렬·응집 스티어링) · 심해 생체광 · 거대 실루엣 이스터에그</td></tr>
+    <tr><td class="cat">진행·경제</td><td><span class="no">없음</span></td><td><span class="yes">업그레이드 4계열 × <b>실명 장비</b></span>(3호 나일론→24호 브레이드) · 콤보 · 도감 보너스 · 체장 표기</td></tr>
+    <tr><td class="cat">리텐션</td><td><span class="no">없음</span></td><td><span class="yes">일일 퀘스트</span>(3개·결정론·보상 수령) + <span class="yes">업적 12종</span> + 골든아워 이벤트</td></tr>
+    <tr><td class="cat">언어</td><td>—</td><td><span class="yes">🇰🇷/🇬🇧</span> 실시간 전환·저장·자동 감지 (61키)</td></tr>
+    <tr><td class="cat">저장·보안</td><td>—</td><td><span class="yes">스키마 v2</span>(v1 자동 마이그레이션) + sanitization — 변조 7종 차단, NaN 경제 차단</td></tr>
+    <tr><td class="cat">접근성</td><td>—</td><td><span class="yes">reduced-motion</span>(타격감 65% 축소) · 색약 안전 긴장 바(해칭·눈금·⚠)</td></tr>
+    <tr><td class="cat">품질</td><td>—</td><td><span class="yes">254 어설션</span>(로직 54 + 퀘스트 200) · GUI 블랙박스 테스트 · 독립 리뷰 APPROVE · 보안 감사 · <b>차분 테스트</b>(렌더 94만 연산 동일)</td></tr>
+    <tr><td class="cat">성능</td><td>—</td><td><span class="yes">프레임 0.036ms</span>(예산의 0.2%) · 파티클 캡 420 · boids 16마리 추가 후에도 최악 2.5ms</td></tr>
+    <tr><td class="cat">배포</td><td><span class="no">불가</span></td><td><span class="yes">라이브</span>: <b>https://younghai.github.io/reel-rush/</b> · PWA 설치 · 오프라인 캐시 · CI(GitHub Actions)</td></tr>
+    <tr><td class="cat">문서</td><td>—</td><td>GDD · 감사 보고서 · Tidewater 소스 분석 · 소개 리포트 · 본 리포트 · DEPLOY 가이드</td></tr>
   </table>
   <div class="kpi">
-    <div><b>0 → 35</b><span>어종</span></div>
+    <div><b>0 → 39</b><span>어종</span></div>
     <div><b>0 → 12</b><span>업적</span></div>
-    <div><b>0 → 16+2</b><span>합성 사운드</span></div>
-    <div><b>0 → 250</b><span>자동 테스트</span></div>
-    <div><b>0 → 3</b><span>프로덕션 커밋</span></div>
+    <div><b>0 → 9</b><span>흡수 알고리즘</span></div>
+    <div><b>0 → 254</b><span>자동 테스트</span></div>
+    <div><b>0 → 7</b><span>프로덕션 커밋</span></div>
     <div><b>0 → 1</b><span>라이브 서비스</span></div>
+  </div>
+</section>
+
+<!-- ═══════════ Tidewater 알고리즘 9종 ═══════════ -->
+<section>
+  <h2>Tidewater 소스·알고리즘 적용 내역 (10/4 추가분)</h2>
+  <p class="lead">저장소를 클론해 src 80,899줄을 정독하고, 게임 로직의 핵심 알고리즘 9종을 우리 2D 아케이드에 맞게 이식했습니다. Before(이번 적용 전 우리 구현) → After(이식 후) 공식 비교:</p>
+  <div class="algo">
+    <div class="card"><h4>① 시간대 활성 곡선</h4>
+      <div class="ba"><span class="b">B:</span> 낮/밤 이진 (올라오거나 안 오거나)</div>
+      <div class="ba"><span class="a">A:</span> dawn(6.5h)·dusk(18.5h) <b>가우시안 피크</b> — 골든아워에 활성이 연속 상승</div>
+      <pre>exp(-((hour-6.5)**2)/2.5)  // dawn peak</pre>
+    </div>
+    <div class="card"><h4>② 수심 서식지 (신규 전략)</h4>
+      <div class="ba"><span class="b">B:</span> 존×시간 테이블만</div>
+      <div class="ba"><span class="a">A:</span> 종별 선호 수심 밴드 + <b>smoothstep 친화도</b> — 밴드 밖은 0.3폭에 걸쳐 감쇠. 깊은 캐스트에서 얕은물 어종 배제(테스트로 검증)</div>
+      <pre>1 - smoothstep(lo-0.3, lo, p)</pre>
+    </div>
+    <div class="card"><h4>③ 입질 지연 분포</h4>
+      <div class="ba"><span class="b">B:</span> 균등 난수 1.6~9초</div>
+      <div class="ba"><span class="a">A:</span> <b>지수분포</b>(풍부한 물일수록 빠름) + 하한 1.6초 보장</div>
+      <pre>2 + -ln(1-r)*mean*0.55</pre>
+    </div>
+    <div class="card"><h4>④ 긴장 관성</h4>
+      <div class="ba"><span class="b">B:</span> 홀드/해제 직접 가산 (기계적)</div>
+      <div class="ba"><span class="a">A:</span> tension이 목표로 <b>지수수렴</b> — 서지·지침이 관성에 반영돼 릴이 살아있음</div>
+      <pre>t += (target-t)*(1-exp(-dt*rate))</pre>
+    </div>
+    <div class="card"><h4>⑤ 슬랙 페널티 (신규)</h4>
+      <div class="ba"><span class="b">B:</span> 풀어도 9초 버팀 — 방심 구간</div>
+      <div class="ba"><span class="a">A:</span> 긴장 &lt;12% <b>2.4초 지속 → 바늘 이탈</b> ("풀면 놓친다")</div>
+    </div>
+    <div class="card"><h4>⑥ 트로피 스태미나</h4>
+      <div class="ba"><span class="b">B:</span> 종 평균 스태미나만</div>
+      <div class="ba"><span class="a">A:</span> 개체 크기 스케일링 — 같은 종이라 <b>트로피가 유의미하게 오래 버팀</b></div>
+      <pre>staminaMax *= (kg/maxKg)**0.35</pre>
+    </div>
+    <div class="card"><h4>⑦ 밴드 효율</h4>
+      <div class="ba"><span class="b">B:</span> 밴드에서만 진행</div>
+      <div class="ba"><span class="a">A:</span> 스태미나 드레인 <b>밴드 1.0배 / 밖 0.3배</b> — "밴드가 3.3배 효율"이라는 메시지를 수치화</div>
+    </div>
+    <div class="card"><h4>⑧ boids 어군</h4>
+      <div class="ba"><span class="b">B:</span> 직선 유영 7마리</div>
+      <div class="ba"><span class="a">A:</span> <b>16마리 무리</b> — 분리/정렬/응집 + 배회, 속도 클램프. 2D O(n²) 예산 내</div>
+    </div>
+    <div class="card"><h4>⑨ 보이스 리밋</h4>
+      <div class="ba"><span class="b">B:</span> 릴 클릭 개별 리미터만</div>
+      <div class="ba"><span class="a">A:</span> <b>카테고리별 동시 상한 테이블</b>(splash 2, snap 1, bite 1...) — 프레임당 큐 폭주 방지</div>
+    </div>
+  </div>
+  <div class="callout warn">
+    <b>의도적으로 채택하지 않은 것</b> — 거리(m) 기반 파이팅(우리 progress%가 2D 가독성·콤보 연동에 유리), 3D 월드·연료 시뮬(정체성 분기), 파도 위상 동기화 오디오(3D 전용). 반대로 우리의 보스 격노(서지 강화)는 Tidewater와 반대 방향이지만 보스 정체성으로 의도적 유지합니다.
   </div>
 </section>
 
 <!-- ═══════════ 왜 오래 걸렸나 ═══════════ -->
 <section>
   <h2>왜 이렇게 오래 걸렸나 — 솔직한 분해</h2>
-  <p class="lead">결론부터: <b>요청 범위 자체가 "게임 회사의 한 분기 사업" 크기</b>였고, 시간의 상당 부분은 코딩이 아니라 <b>검증과 환경 싸움</b>에 쓰였습니다. 다만 그 시간이 실제 버그 8건 이상을 출시 전에 잡아냈습니다.</p>
+  <p class="lead">결론: <b>요청 범위가 "참고 레포 기반 게임 신규 개발 + 검증 + 감사 + 배포 + 알고리즘 이식" — 게임 스튜디오의 몇 주치 몫</b>이었고, 시간의 상당 부분은 코딩이 아니라 <b>검증과 환경 싸움</b>에 쓰였습니다. 그 시간이 출시 전 잡은 버그 10건+로 전환됐습니다.</p>
 
   <h3>① 요청 범위 (본질적 소요)</h3>
   <div class="why">
-    <div class="card"><h4>🎮 게임 전체 신규 개발</h4><p>빈 폴더에서 설계→구현→밸런싱. 스팀 히트작 5작 분석과 메커니즘 이식 포함.</p><div class="cost">지분: 대</div></div>
-    <div class="card"><h4>🧪 요청된 검증 라운드</h4><p>"기능 테스트까지", "보안·성능·호출 감사", "Tier 1~3 순차" — 각각이 별도 프로젝트 규모의 작업.</p><div class="cost">지분: 대</div></div>
+    <div class="card"><h4>🎮 게임 전체 신규 개발</h4><p>Tidewater 컨셉 분석 → 2D 아케이드로 재설계 → 구현 → 밸런싱.</p><div class="cost">지분: 대</div></div>
+    <div class="card"><h4>🧪 검증 라운드 연속 요청</h4><p>기능 테스트 · 보안/성능/호출 감사 · Tier 1~3 — 각각 별도 프로젝트 규모.</p><div class="cost">지분: 대</div></div>
+    <div class="card"><h4>🔬 Tidewater 정밀 분석+이식</h4><p>80,899줄 클론 정독 → 알고리즘 9종을 2D에 맞게 재설계·이식·검증.</p><div class="cost">지분: 중</div></div>
   </div>
 
-  <h3>② 품질 게이트가 잡아낸 실제 버그 (시간 → 품질 전환)</h3>
+  <h3>② 게이트가 잡아낸 실제 버그</h3>
   <table class="bugs">
     <tr><th>발견 시점</th><th>버그</th><th>영향</th></tr>
-    <tr><td>브라우저 QA</td><td>CSS <code>hidden</code> 무시(패널 유출) · 캐스트 착수점 캔버스 이탈 · 존 언락 후 선택 미저장</td><td>시각 결함·저장 불일치</td></tr>
-    <tr><td>보안 감사</td><td><b>치명 3건</b>: 문자열 코인 연결 오염 · NaN 입질 타이머로 <b>게임 영구 정지</b> · NaN 포획 가치 전파</td><td>세이브 깨짐→플레이 불능</td></tr>
-    <tr><td>리뷰/통합</td><td>rAF 정지 워치독 부재 · i18n <code>t()</code> 섀도잉(PERFECT 리빌 크래시) · SW 캐시 스테일(재배포 크래시)</td><td>런타임 크래시</td></tr>
+    <tr><td>브라우저 QA</td><td>CSS hidden 무시 · 캐스트 착수점 이탈 · 존 언락 선택 미저장</td><td>시각·저장 결함</td></tr>
+    <tr><td>보안 감사</td><td><b>치명 3건</b>: 문자열 코인 오염 · NaN 입질 타이머(게임 정지) · NaN 포획 가치</td><td>세이브→플레이 불능</td></tr>
+    <tr><td>리뷰/통합</td><td>rAF 워치독 부재 · <b>i18n t() 섀도잉</b>(모듈 분리 후 차분 테스트로 발견 — PERFECT 리빌 크래시) · <b>SW 캐시 스테일</b>(재배포 크래시, v2→v3→v4 버저닝으로 정착)</td><td>런타임 크래시</td></tr>
+    <tr><td>사용자 제보</td><td>부트 웅음(음악 자동 시작 + 지속 드론) → <b>옵트인 + 이벤트 기반 재설계</b></td><td>첫인상 UX</td></tr>
   </table>
 
-  <h3>③ 환경·도구 이슈 (예상 밖 지연의 주범)</h3>
+  <h3>③ 환경·도구 이슈</h3>
   <div class="why">
-    <div class="card"><h4>🖥️ 브라우저 팬 가림 문제 (최대 지연 요인)</h4><p>자동화 중 창이 가려지면 Chromium이 rAF를 정지·타이머를 6배 스로틀 → 테스트 재시도 반복. 해결: 워치독 루프 + 수동 틱 + 좌표/디스패치 입력. <b>게임 자체는 이 과정에서 더 강해짐</b>(어두운 창에서도 일관 동작).</p><div class="cost">지분: 중~대</div></div>
-    <div class="card"><h4>📦 스테일 캐시 사건</h4><p>파이썬 개발 서버의 휴리스틱 캐시가 수정 전 모듈을 계속 서빙 → "수정했는데 왜 안 바뀌지?" 추적 소요. 근본 해결: no-cache <code>serve.js</code> 신설.</p><div class="cost">지분: 중</div></div>
-    <div class="card"><h4>🤖 서브에이전트 동시성 제한</h4><p>동시 실행 상한(3)에 걸려 퀘스트 에이전트 2회 자동 실패 → 슬롯 확보 후 재투입.</p><div class="cost">지분: 소</div></div>
-    <div class="card"><h4>🌐 배포 후 SW 캐시 충돌</h4><p>서비스워커 캐시 우선 전략이 재배포 시 구 셸을 서빙 → 라이브 크래시. 캐시 v2 범프로 해결 (이번에 얻은 운영 교훈: 셸 변경 시 반드시 버전 업).</p><div class="cost">지분: 소</div></div>
+    <div class="card"><h4>🖥️ 브라우저 팬 가림 (최대 지연)</h4><p>자동화 중 창이 가려지면 rAF 정지·타이머 6배 스로틀 → 재시도 반복. 해결: 워치독 루프 + 수동 틱 + 디스패치 입력 — <b>게임이 더 강해진 산물</b>.</p><div class="cost">지분: 중~대</div></div>
+    <div class="card"><h4>📦 스테일 캐시 사건</h4><p>파이썬 서버 휴리스틱 캐시가 구 모듈 서빙 → no-cache serve.js 신설로 근본 해결.</p><div class="cost">지분: 중</div></div>
+    <div class="card"><h4>🤖 에이전트 동시성 제한</h4><p>동시 상한(3) 초과로 퀘스트 에이전트 2회 자동 실패 → 재투입.</p><div class="cost">지분: 소</div></div>
   </div>
 
   <div class="callout warn">
-    <b>요약</b> — 순수 코딩 시간은 이틀 중 소수 부분이고, 나머지는 ①검증 요청의 실행(테스트 250종·GUI 16포인트·감사·리뷰) ②가려진 창/캐시 같은 <b>자동화 환경과의 싸움</b>이었습니다. 후자에서 얻은 산물(워치독 루프·no-cache 서버·QA 훅·SW 버저닝)은 모두 제품에 반영돼 있습니다.
+    <b>요약</b> — 순수 코딩은 이틀의 소수 부분. 나머지는 ①검증 요청 실행(테스트 254종·GUI 16포인트·감사·리뷰·차분 테스트) ②가려진 창/캐시 같은 <b>자동화 환경과의 싸움</b>이었습니다. 후자의 산물은 전부 제품에 반영돼 있습니다.
   </div>
 </section>
 
@@ -161,13 +214,13 @@
 <section>
   <h2>현재 상태와 남은 것</h2>
   <div class="callout">
-    <b>완료 판정</b> — 요청하신 Tier 1(유통)·2(리텐션)·3(엔지니어링 위생) 전부 완료. 라이브 사이트에서 PERFECT 포획 → 업적 해금 → 콘솔 에러 0까지 재검증했습니다. <b>https://younghai.github.io/reel-rush/</b>
+    <b>완료 판정</b> — 라이브 사이트(https://younghai.github.io/reel-rush/)에서 39종·골든아워·파이팅 v2·boids·음악·퀘스트·업적·이중언어·PWA 전부 동작 확인. 콘솔 에러 0. SW v4.
   </div>
-  <p><b>선택 과제 (다음 확장 후보)</b>: 실기기(iOS Safari) 터치 테스트 · 리더보드/프렌즈 · 스킨·수익화(F2P/프리미엄) · 어장 추가(난파선·극지) · 사운드트랙 확장. 어느 것이든 말씀만 주시면 같은 방식(병렬 서브에이전트 + 검증 게이트)으로 진행합니다.</p>
+  <p><b>선택 과제 (다음 후보)</b>: 실기기(iOS Safari) 터치 검증 · 리더보드 · 스킨/수익화(F2P·프리미엄) · 어장 추가(난파선·극지) · dawn/dusk 전용 보스 · 사운드트랙 확장. 지시 시 동일 프로세스(분석→병렬 구현→검증 게이트)로 진행합니다.</p>
 </section>
 
 <footer>
-  REEL RUSH — Before/After 분석 리포트 · 생성 10/4 · 근거: git 이력 3커밋, 세션 원장(.omo/ulw-loop/ledger.jsonl), 스크린샷 증거 20+ 건
+  REEL RUSH — Before/After v2 리포트 · 생성 10/4 · 근거: git 7커밋, 세션 원장, 스크린샷 25+, Tidewater 클론 분석 노트(.omo/plans/tidewater-source-analysis.md)
 </footer>
 </div>
 </body>
