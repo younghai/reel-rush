@@ -45,6 +45,7 @@ export class Economy {
       quests: null,        // { dateKey, list: serialize() output } — hydrated by quests.js at runtime
       achievements: {},    // id -> true (unlocked)
       musicVolume: 0.5,
+      musicOn: false,      // ambient music is opt-in (a droning pad at boot read as an unwanted hum)
       locale: null,        // 'ko' | 'en' | null (auto)
     };
   }
@@ -80,6 +81,7 @@ export class Economy {
     }
     const mv = Number(s.musicVolume);
     out.musicVolume = Number.isFinite(mv) ? Math.min(1, Math.max(0, mv)) : 0.5;
+    out.musicOn = !!s.musicOn;
     out.locale = (s.locale === 'ko' || s.locale === 'en') ? s.locale : null;
     return out;
   }

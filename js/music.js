@@ -15,7 +15,8 @@
 // Graph (built once per start(), torn down ~0.7s after stop()):
 //   bus (volume * mute) -> soft compressor -> destination
 //   DAY layer   (dayGain -> bus)
-//     warm pad: 4 chord tones (C3 G3 E4 D5, Cmaj9 flavor), 2 detuned
+//     wave washes + sparse soft plucks (NO sustained pad — a v1 pad drone
+//       read as an unwanted "웅" hum at game start, removed in v2)
 //       triangle/sine oscs per tone + slow coherent detune drift
 //       -> lowpass swept by a very slow LFO -> dayGain
 //     wave wash: shared looped noise buffer -> lowpass -> ~5-6s swell
@@ -60,6 +61,7 @@ const S = {
   kAppliedAt: -1,     // ctx time of the last layer-gain retune
   kTimer: 0,          // trailing-edge throttle timer for setDayNight
   washTimer: 0,       // wave-wash scheduler timer
+  pluckTimer: 0,      // day-pluck scheduler timer
   shimTimer: 0,       // shimmer-pluck scheduler timer
   stopTimer: 0,       // deferred teardown timer after stop()
 };
@@ -143,81 +145,9 @@ function build() {
   G.day.connect(G.bus);
   G.night.connect(G.bus);
 
-  /* ---- DAY: warm pad (Cmaj9 flavor) through an LFO-swept lowpass ---- */
-
-  G.padFilter = keep(ctx.createBiquadFilter());
-  G.padFilter.type = 'lowpass';
-  G.padFilter.frequency.value = 760;
-  G.padFilter.Q.value = 0.4;
-  G.padFilter.connect(G.day);
-
-  // Very slow filter sweep (period ~22s).
-  G.padLfoF = ctx.createOscillator();
-  G.padLfoF.type = 'sine';
-  G.padLfoF.frequency.value = 0.045;
-  G.padLfoFDepth = keep(ctx.createGain());
-  G.padLfoFDepth.gain.value = 320;
-  G.padLfoF.connect(G.padLfoFDepth);
-  G.padLfoFDepth.connect(G.padFilter.frequency);
-  G.oscs.push(G.padLfoF);
-
-  // Coherent slow detune drift (period ~17s) shared by every pad osc.
-  G.padLfoD = ctx.createOscillator();
-  G.padLfoD.type = 'sine';
-  G.padLfoD.frequency.value = 0.06;
-  G.padLfoDDepth = keep(ctx.createGain());
-  G.padLfoDDepth.gain.value = 2.4;
-  G.padLfoD.connect(G.padLfoDDepth);
-  G.oscs.push(G.padLfoD);
-
-  // Four chord tones, two slightly detuned oscs each (static +-5 cents).
-  const PAD = [
-    { f: F.C3, type: 'triangle', lvl: 0.09 },
-    { f: F.G3, type: 'triangle', lvl: 0.07 },
-    { f: F.E4, type: 'sine',     lvl: 0.05 },
-    { f: F.D5, type: 'sine',     lvl: 0.022 },
-  ];
-  for (const p of PAD) {
-    const vg = keep(ctx.createGain());
-    vg.gain.value = p.lvl;
-    vg.connect(G.padFilter);
-    for (const cent of [-5, 5]) {
-      const o = ctx.createOscillator();
-      o.type = p.type;
-      o.frequency.value = p.f;
-      o.detune.value = cent;
-      G.padLfoDDepth.connect(o.detune);
-      o.connect(vg);
-      G.oscs.push(o);
-    }
-  }
-
-  /* -- NIGHT: sub drone (C2 + fifth) with slow detune drift -- */
-
-  G.droneLfo = ctx.createOscillator();
-  G.droneLfo.type = 'sine';
-  G.droneLfo.frequency.value = 0.03;
-  G.droneLfoDepth = keep(ctx.createGain());
-  G.droneLfoDepth.gain.value = 4;
-  G.droneLfo.connect(G.droneLfoDepth);
-  G.oscs.push(G.droneLfo);
-
-  const DRONE = [
-    { f: F.C2, lvl: 0.11, cent: -3 },
-    { f: F.G2, lvl: 0.06, cent: 3 },
-  ];
-  for (const p of DRONE) {
-    const o = ctx.createOscillator();
-    o.type = 'sine';
-    o.frequency.value = p.f;
-    o.detune.value = p.cent;
-    G.droneLfoDepth.connect(o.detune);
-    const g = keep(ctx.createGain());
-    g.gain.value = p.lvl;
-    o.connect(g);
-    g.connect(G.night);
-    G.oscs.push(o);
-  }
+  // v2: no sustained pad/drone oscillators — continuous low tones read as an
+  // unwanted hum at game start. Ambience is 100% event-based (washes + sparse
+  // plucks), so between events the music is genuinely silent.
 
   /* -- NIGHT: feedback delay for the shimmer plucks -- */
 
@@ -272,7 +202,7 @@ function washTick() {
       src.loop = true;
       const flt = ctx.createBiquadFilter();
       flt.type = 'lowpass';
-      flt.frequency.value = 480 + Math.random() * 420;
+      flt.frequency.value = (S.k > 0.5 ? 300 : 480) + Math.random() * 420; // darker washes at night
       flt.Q.value = 0.5;
       const g = ctx.createGain();
       const peak = 0.035 + Math.random() * 0.025;
@@ -293,6 +223,47 @@ function washTick() {
     }
   } catch (e) { /* ignore */ }
   scheduleWash();
+}
+
+function schedulePluck(first) {
+  try {
+    if (!S.playing || S.pluckTimer) return;
+    const ms = first ? 1800 + Math.random() * 2200 : 6000 + Math.random() * 6000;
+    S.pluckTimer = setTimeout(pluckTick, ms);
+  } catch (e) { /* ignore */ }
+}
+
+// One sparse soft marimba-ish day pluck (C-major pentatonic, mid register).
+// Fully self-cleaning via onended; skipped while the day layer is silent.
+function pluckTick() {
+  S.pluckTimer = 0;
+  try {
+    const G = S.g;
+    if (!G || !S.playing) return;
+    safeResume(S.ctx);
+    if (S.k < 0.98) {
+      const ctx = S.ctx;
+      const t = ctx.currentTime + 0.05;
+      const DAY_PLUCK = [523.25, 587.33, 659.25, 783.99, 880.0];
+      const f = DAY_PLUCK[(Math.random() * DAY_PLUCK.length) | 0];
+      const o = ctx.createOscillator();
+      o.type = 'triangle';
+      o.frequency.value = f;
+      const flt = ctx.createBiquadFilter();
+      flt.type = 'lowpass';
+      flt.frequency.value = 1800;
+      const g = ctx.createGain();
+      const peak = 0.028 + Math.random() * 0.02;
+      g.gain.setValueAtTime(EPS, t);
+      g.gain.linearRampToValueAtTime(peak, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(EPS, t + 0.9 + Math.random() * 0.5);
+      o.connect(flt); flt.connect(g); g.connect(G.day);
+      o.start(t);
+      o.stop(t + 1.5);
+      o.onended = () => { try { o.disconnect(); flt.disconnect(); g.disconnect(); } catch (e) { /* ignore */ } };
+    }
+  } catch (e) { /* ignore */ }
+  schedulePluck();
 }
 
 function scheduleShimmer(first) {
@@ -343,6 +314,7 @@ function shimmerTick() {
 function clearTimers() {
   try { if (S.washTimer) { clearTimeout(S.washTimer); S.washTimer = 0; } } catch (e) { /* ignore */ }
   try { if (S.shimTimer) { clearTimeout(S.shimTimer); S.shimTimer = 0; } } catch (e) { /* ignore */ }
+  try { if (S.pluckTimer) { clearTimeout(S.pluckTimer); S.pluckTimer = 0; } } catch (e) { /* ignore */ }
   try { if (S.kTimer) { clearTimeout(S.kTimer); S.kTimer = 0; } } catch (e) { /* ignore */ }
 }
 
@@ -403,12 +375,14 @@ export const music = {
           return; // build failed: stay inert rather than half-play
         }
         scheduleWash(true);
+        schedulePluck(true);
         scheduleShimmer(true);
       }
       S.playing = true;
       applyK(true);
       applyBus();
       if (!S.washTimer) scheduleWash();
+      if (!S.pluckTimer) schedulePluck();
       if (!S.shimTimer) scheduleShimmer();
     } catch (e) { /* never throw */ }
   },

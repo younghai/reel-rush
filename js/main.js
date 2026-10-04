@@ -333,6 +333,7 @@ el.muteBtn.addEventListener('click', () => {
   audio.unlock();
   audio.setMuted(!audio.isMuted());
   economy.s.muted = audio.isMuted();
+  music.setMuted(audio.isMuted());
   economy.save();
   renderMute();
 });
@@ -343,7 +344,10 @@ el.musicBtn.addEventListener('click', () => {
   audio.unlock();
   music.init(audio._ctx || undefined);
   music.setVolume(economy.s.musicVolume ?? 0.5);
-  if (music.isPlaying()) music.stop(); else music.start();
+  music.setMuted(!!economy.s.muted);
+  if (music.isPlaying()) { music.stop(); economy.s.musicOn = false; }
+  else { music.start(); economy.s.musicOn = true; }
+  economy.save();
   renderMusicBtn();
 });
 
@@ -370,9 +374,12 @@ el.startBtn.addEventListener('click', () => {
   el.intro.classList.add('hide');
   audio.buy();
   toast(t('toast.firstCast'));
+  // 음악은 옵트인(🎵 버튼) — 시작 시 자재깅 소리가 나지 않도록 자동 재생하지 않는다
   music.init(audio._ctx || undefined);
   music.setVolume(economy.s.musicVolume ?? 0.5);
-  if (!economy.s.muted) music.start();
+  music.setMuted(!!economy.s.muted);
+  if (economy.s.musicOn && !economy.s.muted) music.start();
+  renderMusicBtn();
 });
 
 // ---------- hints ----------
