@@ -5,3 +5,4 @@ gui-test-screenshots/
 *.log
 .DS_Store
 node_modules/
+arirang-clone/
