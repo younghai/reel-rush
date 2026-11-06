@@ -4,28 +4,49 @@ import { t, fishName, rarityName } from '../i18n.js';
 import { drawFishShape } from './fishdraw.js';
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const MONO = 'ui-monospace, "SF Mono", Menlo, monospace';
+const PHOS = '#ffb547', CYAN = '#4dd8e8', GRN = '#57e6a8', ALERT = '#ff6b57', DIMT = '#6f93a8';
+// 어군탐지기 베젤: 눈금 프레임 + 라벨
+function bezel(ctx, x, y, w, h, label) {
+  ctx.fillStyle = 'rgba(4, 15, 23, 0.78)';
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(45, 90, 120, 0.9)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, 7); ctx.stroke();
+  if (label) {
+    ctx.fillStyle = DIMT;
+    ctx.font = '700 9px ' + MONO;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText(label, x + 8, y - 5);
+  }
+}
 
 export function drawPowerMeter(ctx, fg) {
-  const x = 250, y = 210, w = 150, h = 16;
-  ctx.beginPath();
-  ctx.fillStyle = 'rgba(6,20,32,0.75)';
-  ctx.roundRect(x - 4, y - 4, w + 8, h + 8, 10); ctx.fill();
-  const grd = ctx.createLinearGradient(x, 0, x + w, 0);
-  grd.addColorStop(0, '#4db8ff'); grd.addColorStop(0.6, '#59d97e'); grd.addColorStop(1, '#ffd54a');
-  ctx.fillStyle = grd;
-  ctx.fillRect(x, y, w * fg.cast.power, h);
-  ctx.fillStyle = '#fff';
-  ctx.font = '800 13px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(t('scene.powerClick'), x + w / 2, y - 12);
-  // depth band hint
+  const x = 250, y = 214, w = 150, h = 14;
+  bezel(ctx, x - 6, y - 6, w + 12, h + 12, 'CAST POWER');
+  // 눈금 (0/25/50/75/100)
+  ctx.strokeStyle = 'rgba(111, 147, 168, 0.6)'; ctx.lineWidth = 1;
+  for (const tk of [0, 0.25, 0.5, 0.75, 1]) {
+    const tx = x + w * tk;
+    ctx.beginPath(); ctx.moveTo(tx, y - 8); ctx.lineTo(tx, y - 4); ctx.stroke();
+  }
+  // fill: 세 구간 단색 (그라데이션 제거 — 계기 스타일)
   const p = fg.cast.power;
-  const bands = DEPTH_BANDS;
-  const band = bands.find(b => p >= b.from && (p <= b.to || b === bands[bands.length - 1]));
+  ctx.fillStyle = CYAN;
+  ctx.fillRect(x, y, w * p, h);
+  // 수심 밴드 경계 눈금
+  ctx.fillStyle = 'rgba(255, 181, 71, 0.8)';
+  for (const b of DEPTH_BANDS.slice(1)) ctx.fillRect(x + w * b.from - 1, y, 2, h);
+  // 퍼센트 판독값
+  ctx.fillStyle = CYAN;
+  ctx.font = '700 11px ' + MONO;
+  ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText(Math.round(p * 100) + '%', x + w, y - 8);
+  const band = DEPTH_BANDS.find(b => p >= b.from && (p <= b.to || b === DEPTH_BANDS[DEPTH_BANDS.length - 1]));
   if (band) {
-    ctx.fillStyle = 'rgba(220,240,255,0.85)';
-    ctx.font = '700 12px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-    ctx.fillText(t('scene.depth', { band: t('depth.' + band.id) }), x + w / 2, y + h + 18);
+    ctx.fillStyle = PHOS;
+    ctx.font = '700 11px ' + MONO;
+    ctx.textAlign = 'center';
+    ctx.fillText(t('scene.depth', { band: t('depth.' + band.id) }), x + w / 2, y + h + 16);
   }
 }
 
@@ -45,79 +66,92 @@ export function drawStrikeUI(ctx, fg) {
 
 export function drawFightUI(ctx, fg) {
   const F = FIGHT, st = fg.fight;
-  const cx = W / 2, w = 420;
-  // progress bar
-  const py = 596, ph = 14;
-  ctx.fillStyle = 'rgba(6,20,32,0.8)';
-  ctx.beginPath(); ctx.roundRect(cx - w / 2, py, w, ph, 7); ctx.fill();
-  const pgrd = ctx.createLinearGradient(cx - w / 2, 0, cx + w / 2, 0);
-  pgrd.addColorStop(0, '#2a8fd8'); pgrd.addColorStop(1, '#4dd8e8');
-  ctx.fillStyle = pgrd;
-  if (st.progress > 1) { ctx.beginPath(); ctx.roundRect(cx - w / 2 + 2, py + 2, (w - 4) * clamp(st.progress / 100, 0, 1), ph - 4, 5); ctx.fill(); }
-  // fish marker sliding with progress
-  ctx.fillStyle = '#fff';
-  ctx.font = '900 13px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('🐟', cx - w / 2 + 6 + (w - 12) * clamp(st.progress / 100, 0, 1), py + ph - 1);
-  if (fg.fish?.boss) {
-    ctx.strokeStyle = `rgba(255,93,158,${0.5 + 0.4 * Math.sin(fg.t * 6)})`;
-    ctx.lineWidth = 2.5;
-    ctx.strokeRect(cx - w / 2 - 4, py - 4, w + 8, ph + 8);
-  }
-  // tension bar
-  const ty = 622, th = 22;
-  ctx.fillStyle = 'rgba(6,20,32,0.8)';
-  ctx.beginPath(); ctx.roundRect(cx - w / 2, ty, w, th, 8); ctx.fill();
-  // safe band with diagonal hatch (colorblind-safe safe-zone cue, not color-only)
+  const cx = W / 2, w = 440;
+  const bx = cx - w / 2 - 14, by = 566, bh = 108;
+  // 베젤 프레임
+  ctx.fillStyle = 'rgba(4, 15, 23, 0.82)';
+  ctx.beginPath(); ctx.roundRect(bx, by, w + 28, bh, 9); ctx.fill();
+  ctx.strokeStyle = 'rgba(45, 90, 120, 0.9)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(bx, by, w + 28, bh, 9); ctx.stroke();
+  // 어종 라벨 (좌상단)
+  ctx.fillStyle = PHOS;
+  ctx.font = '800 12px ' + MONO;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  if (fg.fish) ctx.fillText((fg.fish.boss ? 'BOSS · ' : 'TARGET · ') + fishName(fg.fish).toUpperCase(), bx + 12, by + 18);
+
+  // ── LINE (progress) 게이지: 눈금 프레임 + 시안 필 ──
+  const py = by + 30, ph = 13;
+  ctx.fillStyle = 'rgba(10, 30, 42, 0.9)';
+  ctx.beginPath(); ctx.roundRect(cx - w / 2, py, w, ph, 3); ctx.fill();
+  ctx.strokeStyle = 'rgba(45, 90, 120, 0.9)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(cx - w / 2, py, w, ph, 3); ctx.stroke();
+  ctx.fillStyle = CYAN;
+  if (st.progress > 1) { ctx.beginPath(); ctx.roundRect(cx - w / 2 + 1, py + 1, (w - 2) * clamp(st.progress / 100, 0, 1), ph - 2, 2); ctx.fill(); }
+  ctx.fillStyle = DIMT;
+  ctx.font = '700 9px ' + MONO;
+  ctx.textAlign = 'left';
+  ctx.fillText('LINE', cx - w / 2, py - 4);
+  ctx.textAlign = 'right';
+  ctx.fillText(Math.round(clamp(st.progress, 0, 100)) + '%', cx + w / 2, py - 4);
+
+  // ── TENSION 게이지: 눈금 + 초록 밴드(해칭) + 판독값 ──
+  const ty = py + ph + 16, th = 18;
+  ctx.fillStyle = 'rgba(10, 30, 42, 0.9)';
+  ctx.beginPath(); ctx.roundRect(cx - w / 2, ty, w, th, 3); ctx.fill();
+  ctx.strokeStyle = 'rgba(45, 90, 120, 0.9)';
+  ctx.beginPath(); ctx.roundRect(cx - w / 2, ty, w, th, 3); ctx.stroke();
+  // 초록 밴드 + 해칭 (색약 안전)
   const gx = cx - w / 2 + w * (F.greenLow / 100), gw = w * ((F.greenHigh - F.greenLow) / 100);
   ctx.save();
   ctx.beginPath(); ctx.rect(gx, ty + 2, gw, th - 4); ctx.clip();
-  ctx.fillStyle = 'rgba(89,217,126,0.35)';
+  ctx.fillStyle = 'rgba(87, 230, 168, 0.22)';
   ctx.fillRect(gx, ty + 2, gw, th - 4);
-  ctx.strokeStyle = 'rgba(16,56,32,0.85)'; ctx.lineWidth = 3;
-  for (let hx = gx - th; hx < gx + gw + th; hx += 9) {
+  ctx.strokeStyle = 'rgba(87, 230, 168, 0.4)'; ctx.lineWidth = 2;
+  for (let hx = gx - th; hx < gx + gw + th; hx += 8) {
     ctx.beginPath(); ctx.moveTo(hx, ty + th); ctx.lineTo(hx + th, ty); ctx.stroke();
   }
   ctx.restore();
-  // boundary ticks
-  ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2;
-  for (const bx of [gx, gx + gw]) {
-    ctx.beginPath(); ctx.moveTo(bx, ty - 4); ctx.lineTo(bx, ty + th + 4); ctx.stroke();
+  // 25/50/75 눈금
+  ctx.strokeStyle = 'rgba(111, 147, 168, 0.7)'; ctx.lineWidth = 1;
+  for (const tk of [0.25, 0.5, 0.75]) {
+    const tx = cx - w / 2 + w * tk;
+    ctx.beginPath(); ctx.moveTo(tx, ty - 5); ctx.lineTo(tx, ty - 1); ctx.stroke();
   }
-  // red zone fill from strain
-  if (st.strain > 0) {
-    const limit = F.strainBase + fg.economy.upgrades.line * 0.45;
-    ctx.fillStyle = 'rgba(255,93,93,0.75)';
-    ctx.fillRect(cx - w / 2, ty + th - 3, w * clamp(st.strain / limit, 0, 1), 3);
+  // 밴드 경계 흰 눈금
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)'; ctx.lineWidth = 1.5;
+  for (const bx2 of [cx - w / 2 + w * (F.greenLow / 100), cx - w / 2 + w * (F.greenHigh / 100)]) {
+    ctx.beginPath(); ctx.moveTo(bx2, ty - 4); ctx.lineTo(bx2, ty + th + 4); ctx.stroke();
   }
   // tension fill
   const tk = st.tension / 100;
-  const col = tk <= F.greenHigh / 100 ? '#59d97e' : (tk < 0.92 ? '#ffd54a' : '#ff5d5d');
-  ctx.fillStyle = col;
-  ctx.beginPath(); ctx.roundRect(cx - w / 2 + 2, ty + 2, (w - 4) * tk, th - 4, 6); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(cx - w / 2 + w * tk, ty); ctx.lineTo(cx - w / 2 + w * tk, ty + th); ctx.stroke();
-  // danger glyph above the band (colorblind: shape + blink cue)
+  ctx.fillStyle = tk * 100 <= F.greenHigh ? GRN : (tk < 0.92 ? PHOS : ALERT);
+  ctx.beginPath(); ctx.roundRect(cx - w / 2 + 1, ty + 1, (w - 2) * tk, th - 2, 2); ctx.fill();
+  // 판독 바 + 수치
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx - w / 2 + w * tk, ty - 2); ctx.lineTo(cx - w / 2 + w * tk, ty + th + 2); ctx.stroke();
+  ctx.fillStyle = tk * 100 > F.greenHigh ? ALERT : '#ffffff';
+  ctx.font = '800 11px ' + MONO;
+  ctx.textAlign = 'right';
+  ctx.fillText(Math.round(st.tension), cx + w / 2, ty - 6);
+  ctx.fillStyle = DIMT;
+  ctx.font = '700 9px ' + MONO;
+  ctx.textAlign = 'left';
+  ctx.fillText('TENSION', cx - w / 2, ty - 6);
+  // 경고 글리프 (밴드 초과 시 점멸)
   if (tk * 100 > F.greenHigh) {
-    ctx.font = '900 17px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.globalAlpha = 0.7 + 0.3 * Math.sin(fg.t * 18);
-    ctx.fillText('⚠', cx - w / 2 + w * tk + 12, ty + th / 2);
+    ctx.fillStyle = ALERT;
+    ctx.font = '900 13px ' + MONO;
+    ctx.textAlign = 'center';
+    ctx.globalAlpha = 0.6 + 0.4 * Math.sin(fg.t * 16);
+    ctx.fillText('! OVERLOAD', cx, ty + th + 14);
     ctx.globalAlpha = 1;
   }
-  // labels
-  ctx.fillStyle = 'rgba(220,240,255,0.9)';
-  ctx.font = '800 13px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(fg.fish ? `${fg.fish.boss ? '👑 ' : ''}${fishName(fg.fish)} ${t('scene.fightHelp')}` : '', cx, ty - 44);
-  ctx.fillStyle = st.tension > F.greenHigh ? '#ff8a8a' : 'rgba(220,240,255,0.6)';
-  ctx.font = '700 11px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-  ctx.fillText(t('scene.tension'), cx, ty + th + 16);
-  // stamina pips
-  if (fg.fish) {
-    const sk = clamp(st.stamina / (st.staminaMax || fg.fish.stamina), 0, 1);
-    ctx.fillStyle = 'rgba(255,180,80,0.9)';
-    ctx.fillRect(cx - w / 2, ty - 10, w * sk, 4);
+  // 슬랙 경고
+  if (st.slack > 0.3) {
+    ctx.fillStyle = PHOS;
+    ctx.font = '800 12px ' + MONO;
+    ctx.textAlign = 'center';
+    ctx.fillText('REEL! (SLACK ' + Math.round(st.slack * 10) / 10 + 's)', cx, ty + th + 14);
   }
 }
 
@@ -125,7 +159,7 @@ export function drawRevealCard(ctx, fg) {
   const r = fg.reveal;
   if (!r) return;
   const R = RARITIES[r.fish.rarity];
-  const rt = r.t; // reveal elapsed time (renamed from t: it shadowed the i18n t() import)
+  const rt = r.t;
   // dark overlay
   ctx.fillStyle = `rgba(4,14,24,${clamp(rt * 2, 0, 0.55)})`;
   ctx.fillRect(0, 0, W, H);
@@ -133,7 +167,7 @@ export function drawRevealCard(ctx, fg) {
   const k = clamp(rt / 0.5, 0, 1);
   const ease = 1 - Math.pow(1 - k, 3);
   const scale = 0.6 + ease * 0.5 + (k >= 1 ? Math.sin((rt - 0.5) * 8) * 0.02 : 0);
-  const flip = Math.abs(Math.cos((1 - ease) * Math.PI)); // 0 -> 1 flip
+  const flip = Math.abs(Math.cos((1 - ease) * Math.PI));
   ctx.save();
   ctx.translate(W / 2, 300);
   ctx.scale(scale * flip, scale);
@@ -145,41 +179,64 @@ export function drawRevealCard(ctx, fg) {
     ctx.fillStyle = g;
     ctx.fillRect(-260, -260, 520, 520);
   }
-  // card body
+  // card body — 어획 기록표 (catch record)
   const cw = 300, ch = 360;
-  ctx.fillStyle = '#0e2739';
-  ctx.beginPath(); ctx.roundRect(-cw / 2, -ch / 2, cw, ch, 18); ctx.fill();
-  ctx.strokeStyle = R.color; ctx.lineWidth = 4;
-  ctx.beginPath(); ctx.roundRect(-cw / 2, -ch / 2, cw, ch, 18); ctx.stroke();
-  // rarity header band
+  ctx.fillStyle = '#0b1e2a';
+  ctx.beginPath(); ctx.roundRect(-cw / 2, -ch / 2, cw, ch, 6); ctx.fill();
+  ctx.strokeStyle = R.color; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.roundRect(-cw / 2, -ch / 2, cw, ch, 6); ctx.stroke();
+  // 레어도 스탬프 (기울인 각인)
   ctx.fillStyle = R.color;
-  ctx.beginPath(); ctx.roundRect(-cw / 2, -ch / 2, cw, 42, [18, 18, 0, 0]); ctx.fill();
-  ctx.fillStyle = R.order >= 3 ? '#12042a' : '#062033';
-  ctx.font = '900 20px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
+  ctx.font = '900 15px ' + MONO;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('★'.repeat(R.order + 1) + ' ' + rarityName(r.fish.rarity), 0, -ch / 2 + 22);
+  ctx.save();
+  ctx.translate(72, -ch / 2 + 32); ctx.rotate(-0.12);
+  ctx.globalAlpha = 0.92;
+  ctx.fillText('◆ ' + rarityName(r.fish.rarity), 0, 0);
+  ctx.restore();
+  // 기록 구분선
+  ctx.strokeStyle = 'rgba(111, 147, 168, 0.35)'; ctx.lineWidth = 1;
+  ctx.textBaseline = 'alphabetic';
+  for (const ly of [-ch / 2 + 58, -4, 52]) {
+    ctx.beginPath(); ctx.moveTo(-cw / 2 + 18, ly); ctx.lineTo(cw / 2 - 18, ly); ctx.stroke();
+  }
   // fish drawing
-  drawFishShape(ctx, r.fish, 0, -30, 110 * clamp(r.fish.scale, 0.7, 1.6), 1, false, true);
+  drawFishShape(ctx, r.fish, 0, -32, 108 * clamp(r.fish.scale, 0.7, 1.6), 1, false, true);
   // name
   ctx.fillStyle = '#eaf6ff';
-  ctx.font = '900 24px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-  ctx.fillText(fishName(r.fish), 0, 62);
-  ctx.fillStyle = '#8fb4cc';
-  ctx.font = '700 13px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-  ctx.fillText(`${r.fish.name} · ${(r.weight).toFixed(2)}kg${r.cm ? ' · ' + r.cm + 'cm' : ''}`, 0, 84);
+  ctx.font = '900 23px "Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(fishName(r.fish), 0, 60);
+  // data rows (mono 계기 판독)
+  ctx.font = '700 12.5px ' + MONO;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  const rows = [
+    ['WEIGHT', r.weight.toFixed(2) + ' kg'],
+    ['LENGTH', r.cm ? r.cm + ' cm' : '—'],
+  ];
+  rows.forEach(([kk, vv], i) => {
+    const ry = 88 + i * 20;
+    ctx.fillStyle = DIMT;
+    ctx.fillText(kk, -cw / 2 + 24, ry);
+    ctx.fillStyle = '#eaf6ff';
+    ctx.textAlign = 'right';
+    ctx.fillText(vv, cw / 2 - 24, ry);
+    ctx.textAlign = 'left';
+  });
   // value
-  ctx.fillStyle = '#ffd54a';
-  ctx.font = '900 30px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-  ctx.fillText(`+${r.value.toLocaleString()}🪙`, 0, 122);
+  ctx.fillStyle = PHOS;
+  ctx.font = '900 27px ' + MONO;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('+' + r.value.toLocaleString() + ' G', 0, 134);
   if (r.perfect) {
-    ctx.fillStyle = '#ffd54a';
-    ctx.font = '900 15px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-    ctx.fillText(t('scene.perfectHook'), 0, 148);
+    ctx.fillStyle = PHOS;
+    ctx.font = '900 13px ' + MONO;
+    ctx.fillText('PERFECT HOOK x1.5', 0, 158);
   }
   if (r.combo > 1) {
     ctx.fillStyle = '#ff9c40';
-    ctx.font = '900 15px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
-    ctx.fillText(`COMBO x${r.combo}`, 0, 168);
+    ctx.font = '900 13px ' + MONO;
+    ctx.fillText('COMBO x' + r.combo, 0, 178);
   }
   ctx.restore();
   // shine sweep for epic+
@@ -197,10 +254,10 @@ export function drawRevealCard(ctx, fg) {
     ctx.restore();
   }
   if (r.isNew) {
-    ctx.fillStyle = '#59d97e';
-    ctx.font = '900 22px "SF Pro KR","Pretendard","Apple SD Gothic Neo",sans-serif';
+    ctx.fillStyle = GRN;
+    ctx.font = '900 19px ' + MONO;
     ctx.textAlign = 'center';
     const bounce = Math.abs(Math.sin(rt * 5)) * 6;
-    ctx.fillText(t('scene.newLog'), W / 2, 100 - bounce);
+    ctx.fillText(t('scene.newLog'), W / 2, 96 - bounce);
   }
 }

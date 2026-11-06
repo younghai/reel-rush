@@ -334,8 +334,18 @@ el.btnLog.addEventListener('click', () => { audio.ui(); openPanel('logPanel'); }
 document.querySelectorAll('.close-btn').forEach(b => b.addEventListener('click', () => { audio.ui(); $(`#${b.dataset.close}`).hidden = true; }));
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanels(); });
 
+// ---------- icons (inline SVG — 이모지 대신 계기 기호) ----------
+const ICONS = {
+  sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>',
+  moon: '<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 7 7 0 1 0 20 14.5z"/></svg>',
+  soundOn: '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  soundOff: '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l4 6M21 9l-4 6"/></svg>',
+  music: '<svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2.2"/><circle cx="17" cy="16" r="2.2"/></svg>',
+  musicOff: '<svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2.2"/><circle cx="17" cy="16" r="2.2"/><path d="M4 4l16 16"/></svg>',
+};
+
 // ---------- mute ----------
-function renderMute() { el.muteBtn.textContent = audio.isMuted() ? '🔇' : '🔊'; }
+function renderMute() { el.muteBtn.innerHTML = audio.isMuted() ? ICONS.soundOff : ICONS.soundOn; }
 el.muteBtn.addEventListener('click', () => {
   audio.unlock();
   audio.setMuted(!audio.isMuted());
@@ -346,7 +356,7 @@ el.muteBtn.addEventListener('click', () => {
 });
 
 // ---------- music ----------
-function renderMusicBtn() { el.musicBtn.textContent = music.isPlaying() ? '🎵' : '🎵̸'; }
+function renderMusicBtn() { el.musicBtn.innerHTML = music.isPlaying() ? ICONS.music : ICONS.musicOff; }
 el.musicBtn.addEventListener('click', () => {
   audio.unlock();
   music.init(audio._ctx || undefined);
@@ -442,8 +452,8 @@ function step(dt) {
   updateHint();
   // clock icon
   const night = scene.isNight(scene.worldT);
-  const icon = night ? '🌙' : '☀️';
-  if (el.timeIcon.dataset.v !== icon) { el.timeIcon.dataset.v = icon; el.timeIcon.textContent = icon; }
+  const icon = night ? 'moon' : 'sun';
+  if (el.timeIcon.dataset.v !== icon) { el.timeIcon.dataset.v = icon; el.timeIcon.innerHTML = ICONS[icon]; }
   saveT += dt;
   if (saveT > 8) { saveT = 0; economy.save(); }
 }
